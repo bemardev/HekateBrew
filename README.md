@@ -4,15 +4,20 @@
 
 HekateBrew is a simple Nintendo Switch Homebrew for 
 - Launching Hekate configs described in [hekate](https://github.com/CTCaer/hekate) config file and ini directory.
->*(config logos are shown if they are defined as `icon=` in ini file)*
+
+*(config logos are shown if they are defined as `icon=` in ini file)*
 - Launching payloads from [hekate](https://github.com/CTCaer/hekate) payloads directory.
->*(payload logos are shown if they exist in payload folder with the same name and `.bmp` or `.png` extension)*
+
+*(payload logos are shown if they exist in payload folder with the same name and `.bmp` or `.png` extension)*
 - Launching payloads from [Argon-NX](https://github.com/Guillem96/argon-nx) payloads directory.
->*(payload logos are shown if they exist in Argon-NX logos directory)*
+
+*(payload logos are shown if they exist in Argon-NX logos directory)*
 
 ## Configuration
 
-For Hekate users, place last Hekate payload, renamed `payload.bin`, inside `switch\HekateBrew` directory in your sd card.
+Extract HekateBrew zip release to the sd card root.
+
+*(Or, place `HekateBrew.nro` in switch directory and last Hekate payload, renamed `payload.bin`, inside `switch\HekateBrew` directory in your sd card)*
 
 ## Preview
 

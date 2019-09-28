@@ -16,10 +16,10 @@ For Hekate users, place last Hekate payload, renamed `payload.bin`, inside `swit
 
 ## Preview
 
-### HekateBrew main menu - Dark theme
+### *HekateBrew main menu - Dark theme*
 ![Hkbrew_dark](https://user-images.githubusercontent.com/55793274/65813332-35984a00-e1d4-11e9-98cc-30812bc404b0.jpg)
 
-### HekateBrew more config - Light theme
+### *HekateBrew more config - Light theme*
 ![Hkbrew_light](https://user-images.githubusercontent.com/55793274/65813333-3630e080-e1d4-11e9-8dda-3a76946cacef.jpg)
 
 ## Credits

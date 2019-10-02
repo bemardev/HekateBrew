@@ -20,6 +20,13 @@
 #include <switch.h>
 #include <pu/Plutonium>
 #include <IconTypes.hpp>
+
+struct FileInfo
+{
+    std::string name;
+    std::string pathName;
+    std::string previousPath;
+};
 struct ini_info
 {
     std::string name;
@@ -31,11 +38,23 @@ struct HekateConfig
 {
     int autoboot;
     int autoboot_list;
+    int bootwait;
+    int verification;
+    int autohosoff;
+    int autonogc;
+    int backlight;
 };
 struct HekateBrewConfig
 {
     std::string path;
     std::string theme;
+    bool showHekate;
+    bool showArgon;
+    bool showRootDir;
+    bool showCustomPath;
+    std::string customPath;
+    bool hasHekate;
+    bool hasArgon;
 };
 struct ColorScheme
 {

@@ -25,13 +25,8 @@ namespace set
     {
         Settings gset;
 
-        bool hkBrewLoad = LoadHekateBrewConfig(gsets.hbConfig);
-        gset.hbConfig.path = "sdmc:/switch/HekateBrew/";
-
-        // Hekate config
-        gset.hConfig = {0, 0};
-        gset.needSave = false;
-
+        LoadHekateBrewConfig(gset.hbConfig);
+        
         // Blink delay for borders
         gset.blinkDelay = 500;
 
@@ -44,9 +39,15 @@ namespace set
             gset.CustomScheme = ui::DefaultLight;
 
         LoadHekateInfos(gset.configItems, gset.moreconfigItems, gset.hekatePayloads);
-        LoadHekateConfig(gsets.hConfig);
+        LoadHekateConfig(gset.hConfig);
         LoadArgonInfos(gset.argonPayloads);
 
         return gset;
+    }
+    
+    void SaveSettings(HekateBrewConfig &hbconfig, HekateConfig &hconfig)
+    {
+        SaveHekateBrewConfig(hbconfig);
+        SaveHekateConfig(hconfig);
     }
 }

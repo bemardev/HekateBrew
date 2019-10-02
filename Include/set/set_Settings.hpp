@@ -37,4 +37,6 @@ namespace set
     };
 
     Settings ProcessSettings();
+    
+    void SaveSettings(HekateBrewConfig &config, HekateConfig &hconfig);
 }

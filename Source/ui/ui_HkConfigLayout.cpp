@@ -31,6 +31,7 @@ namespace ui
         this->iconClose = elm::TextIcon::New(this->iconLaunch->GetX() - 40, 670, "Back", Icons::Icon_B, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
         this->Add(this->iconClose);
         this->pageName = pu::ui::elm::TextBlock::New(60, 20, "", 25);
+        this->pageName->SetColor(gsets.CustomScheme.Text);
         this->Add(this->pageName);
         
         this->buttonGrid = elm::SimpleGrid::New(60, 112, true);

@@ -36,6 +36,7 @@ namespace ui
         this->iconHReboot = elm::TextIcon::New(this->iconReboot->GetX() - 40, 20, "Reboot to Hekate", Icons::Icon_ZL, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
         this->Add(this->iconHReboot);
         this->pageName = pu::ui::elm::TextBlock::New(60, 20, "HekateBrew", 25);
+        this->pageName->SetColor(gsets.CustomScheme.Text);
         this->Add(this->pageName);
         
         this->buttonGrid = elm::SimpleGrid::New(58, 232, true);

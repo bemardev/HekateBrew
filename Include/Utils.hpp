@@ -22,14 +22,14 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <dirent.h>
 #include <fstream>
 #include <cstdio>
+#include <dirent.h>
+#include <sys/types.h>
 
 namespace fs = std::filesystem;
 
 // trim from start (in place)
-
 static inline void ltrim(std::string &s)
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
@@ -38,7 +38,6 @@ static inline void ltrim(std::string &s)
 }
 
 // trim from end (in place)
-
 static inline void rtrim(std::string &s)
 {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
@@ -47,7 +46,6 @@ static inline void rtrim(std::string &s)
 }
 
 // trim from both ends (in place)
-
 static inline void trim(std::string &s)
 {
     ltrim(s);
@@ -55,25 +53,13 @@ static inline void trim(std::string &s)
 }
 
 // trim from start (copying)
-
 static inline std::string ltrim_copy(std::string s)
 {
     ltrim(s);
     return s;
 }
 
-static inline void logInfo(std::string text)
-{
-    std::ofstream debugFile;
-    debugFile.open("sdmc:/switch/HekateBrew.log", std::ios::out | std::ios::app);
-    if (debugFile.is_open()) {
-        debugFile << text << std::endl;
-    }
-    debugFile.close();
-}
-
 // trim from end (copying)
-
 static inline std::string rtrim_copy(std::string s)
 {
     rtrim(s);
@@ -81,23 +67,25 @@ static inline std::string rtrim_copy(std::string s)
 }
 
 // trim from both ends (copying)
-
 static inline std::string trim_copy(std::string s)
 {
     trim(s);
     return s;
 }
 
+// ends with suffix
 static inline bool endsWith(const std::string& str, const std::string& suffix)
 {
     return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
+// begins with suffix
 static inline bool startsWith(const std::string& str, const std::string& prefix)
 {
     return str.size() >= prefix.size() && 0 == str.compare(0, prefix.size(), prefix);
 }
 
+// replace occurence in string
 inline void find_and_replace(std::string& file_contents,
         const std::string& before, const std::string& after)
 {
@@ -110,6 +98,13 @@ inline void find_and_replace(std::string& file_contents,
     }
 }
 
+// remove double slash
+inline void removeDblSlash(std::string& file_contents)
+{
+    file_contents.erase(std::unique(file_contents.begin(), file_contents.end(), [](char a, char b){return a == '/' && b == '/';}), file_contents.end());
+}
+
+// shift string
 inline void stringShift(std::string& str)
 {
     if (str.length() > 0) {
@@ -119,6 +114,7 @@ inline void stringShift(std::string& str)
     }
 }
 
+// fs is directory
 inline bool isDir(const std::string& pathString = std::string())
 {
     const fs::path path(pathString);
@@ -132,6 +128,7 @@ inline bool isDir(const std::string& pathString = std::string())
     return false;
 }
 
+// fs is file
 inline bool isFile(const std::string& pathString = std::string())
 {
     const fs::path path(pathString);
@@ -145,6 +142,7 @@ inline bool isFile(const std::string& pathString = std::string())
     return false;
 }
 
+// fs remove file
 inline bool removeFile(const std::string& pathString)
 {
     std::error_code ec;
@@ -154,6 +152,7 @@ inline bool removeFile(const std::string& pathString)
     return false;
 }
 
+// fs rename file
 inline bool renameFile(const std::string& pathOrigString, const std::string& pathDestString)
 {
     if (pathOrigString != "" && pathDestString != "") {
@@ -163,6 +162,7 @@ inline bool renameFile(const std::string& pathOrigString, const std::string& pat
     return false;
 }
 
+// stream copy file
 inline bool copyFile(const std::string& pathOrigString, const std::string& pathDestString)
 {
     std::ifstream src(pathOrigString, std::ios::binary);
@@ -176,6 +176,7 @@ inline bool copyFile(const std::string& pathOrigString, const std::string& pathD
     return false;
 }
 
+// fs create dir
 inline bool create_directory(const std::string& pathString)
 {
     if (!pathString.empty()) {
@@ -185,12 +186,32 @@ inline bool create_directory(const std::string& pathString)
         return false;
 }
 
+// fs read dir ascii order
 inline std::vector<std::string> read_directory(const std::string& pathString = std::string())
 {
     std::vector <std::string> result;
     for (const auto & entry : fs::directory_iterator(pathString)) {
         result.push_back(entry.path());
     }
+    std::sort(result.begin(), result.end());
+    return result;
+}
+
+inline std::vector<std::string> listSubDirectories(const std::string& pathString)
+{
+    std::vector<std::string> result;
+    DIR * dir;
+    struct dirent* entry;
+    dir = opendir(pathString.c_str());
+    if(dir != NULL)
+    {
+        while((entry = readdir(dir)))
+        {
+            if(entry->d_type == DT_DIR)
+                result.push_back(entry->d_name);
+        }
+    }
+    closedir(dir);
     std::sort(result.begin(), result.end());
     return result;
 }

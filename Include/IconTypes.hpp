@@ -68,6 +68,7 @@ enum Icons : uint16_t
     Icon_JoyconHLeft1 = 0xE129,
     Icon_JoyconBothAttached = 0xE12A,
     //...
+    Icon_Checked = 0xE14B,
     Icon_ExclamBlack = 0xE14D,
     Icon_ExclamWhite = 0xE150,
     Icon_ExclamSquareWhite = 0xE151,

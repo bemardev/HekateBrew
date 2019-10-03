@@ -31,6 +31,5 @@ namespace ui
         void OnPostRender(pu::ui::render::Renderer::Ref &Drawer);
     private:
         elm::RotatableImage::Ref Loader;
-        pu::ui::elm::Image::Ref tmpImg;
     };
 }

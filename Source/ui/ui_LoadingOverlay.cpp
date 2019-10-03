@@ -22,11 +22,8 @@ namespace ui
 
     LoadingOverlay::LoadingOverlay(pu::String imagePath, pu::ui::Color BaseColor) : Overlay(0, 0, 1280, 720, BaseColor)
     {
-        // old overlay constructor : Overlay(550, 270, 180, 180, BaseColor) and image at 0,0
         this->Loader = elm::RotatableImage::New(550, 270, imagePath, 10, 50);
-        this->tmpImg = pu::ui::elm::Image::New(615, 385, imagePath);
         this->Add(this->Loader);
-        //this->Add(this->tmpImg);
     }
 
     void LoadingOverlay::OnPreRender(pu::ui::render::Renderer::Ref &Drawer)

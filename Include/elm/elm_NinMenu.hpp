@@ -69,9 +69,7 @@ namespace elm
             void SetNumberOfItemsToShow(s32 ItemsToShow);
             pu::ui::Color GetColor();
             void SetColor(pu::ui::Color Color);
-            void SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor);
-            pu::ui::Color GetOnFocusColor();
-            void SetOnFocusColor(pu::ui::Color Color);
+            void SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor);
             void SetIsFocused(bool isFocus);
             pu::ui::Color GetScrollbarColor();
             void SetScrollbarColor(pu::ui::Color Color);
@@ -100,7 +98,6 @@ namespace elm
             s32 isel;
             pu::ui::Color scb;
             pu::ui::Color clr;
-            pu::ui::Color fcs;
             bool icdown;
             int basestatus;
             std::chrono::time_point<std::chrono::steady_clock> basetime;
@@ -117,6 +114,7 @@ namespace elm
             pu::ui::Color _altclr;
             pu::ui::Color _baseclr;
             pu::ui::Color _innerclr;
+            pu::ui::Color _lineclr;
             bool _isfocus;
     };
 }

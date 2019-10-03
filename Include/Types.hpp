@@ -66,6 +66,7 @@ struct ColorScheme
     pu::ui::Color GridBord; // grid border color
     pu::ui::Color GridAlt; // grid alternate border color
     pu::ui::Color GridInner; // grid inner border color
+    pu::ui::Color LineSep;
     std::string configMenuImage;
     std::string moreconfigMenuImage;
     std::string payloadMenuImage;

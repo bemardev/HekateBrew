@@ -36,6 +36,8 @@ namespace elm
             void SetValue(pu::String value);
             pu::ui::Color GetColor();
             void SetColor(pu::ui::Color Color);
+            pu::ui::Color GetValueColor();
+            void SetValueColor(pu::ui::Color Color);
             bool GetCoolDown();
             void SetCoolDown(bool CoolDown);
             void AddOnClick(std::function<void()> Callback, u64 Key = KEY_A);
@@ -51,6 +53,7 @@ namespace elm
             pu::String name;
             pu::String value;
             pu::ui::Color clr;
+            pu::ui::Color vclr;
             bool icdown;
             bool hasicon;
             bool disabled;
@@ -78,7 +81,7 @@ namespace elm
             void SetNumberOfItemsToShow(s32 ItemsToShow);
             pu::ui::Color GetColor();
             void SetColor(pu::ui::Color Color);
-            void SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor);
+            void SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor);
             pu::ui::Color GetOnFocusColor();
             void SetOnFocusColor(pu::ui::Color Color);
             void SetIsFocused(bool isFocus);
@@ -96,7 +99,6 @@ namespace elm
             void OnInput(u64 Down, u64 Up, u64 Held, bool Touch);
         private:
             void ReloadItemRenders();
-            pu::ui::render::NativeTexture GetTextContent(std::string text, bool selected = false);
             std::map<std::string, pu::ui::render::NativeTexture> _contents;
             bool dtouch;
             s32 x;
@@ -117,6 +119,7 @@ namespace elm
             std::vector<NinContentMenuItem::Ref> itms;
             pu::ui::render::NativeFont font;
             std::vector<pu::ui::render::NativeTexture> loadednames;
+            std::vector<pu::ui::render::NativeTexture> loadedvalues;
             std::vector<pu::ui::render::NativeTexture> loadedicons;
             
             std::chrono::time_point<std::chrono::steady_clock> blinktime;

@@ -6,6 +6,7 @@ namespace elm
     NinContentMenuItem::NinContentMenuItem(pu::String Name, pu::String Value)
     {
         this->clr = {10, 10, 10, 255};
+        this->vclr = this->clr;
         this->name = Name;
         this->value = Value;
         this->hasicon = false;
@@ -41,6 +42,16 @@ namespace elm
     void NinContentMenuItem::SetColor(pu::ui::Color Color)
     {
         this->clr = Color;
+    }
+    
+    pu::ui::Color NinContentMenuItem::GetValueColor()
+    {
+        return this->vclr;
+    }
+
+    void NinContentMenuItem::SetValueColor(pu::ui::Color Color)
+    {
+        this->vclr = Color;
     }
 
     bool NinContentMenuItem::GetCoolDown()
@@ -203,7 +214,7 @@ namespace elm
         this->clr = Color;
     }
 
-    void NinContentMenu::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor)
+    void NinContentMenu::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor)
     {
         this->_txtclr = TextColor;
         this->_borderclr = BorderColor;
@@ -250,8 +261,16 @@ namespace elm
     void NinContentMenu::ClearItems()
     {
         this->itms.clear();
+        for(auto &name : this->loadednames)
+            pu::ui::render::DeleteTexture(name);
         this->loadednames.clear();
+        for(auto &icon : this->loadedicons)
+            if(icon != NULL)
+                pu::ui::render::DeleteTexture(icon);
         this->loadedicons.clear();
+        for(auto &value : this->loadedvalues)
+            pu::ui::render::DeleteTexture(value);
+        this->loadedvalues.clear();
     }
 
     void NinContentMenu::SetCooldownEnabled(bool Cooldown)
@@ -316,8 +335,8 @@ namespace elm
                 if (nb < 0) nb = 0;
                 pu::ui::Color nclr(nr, ng, nb, this->clr.A);
                 auto loadedidx = i - this->fisel;
-                auto curname = GetTextContent(this->itms[i]->GetName().AsUTF8(), (this->isel == i && this->_isfocus));
-                auto curvalue = GetTextContent(this->itms[i]->GetValue().AsUTF8(), true);
+                auto curname = loadednames[loadedidx];
+                auto curvalue = loadedvalues[loadedidx];
                 auto curicon = this->loadedicons[loadedidx];
                 if (this->isel == i && this->_isfocus)
                 {
@@ -337,9 +356,9 @@ namespace elm
                     {
                         Drawer->RenderRoundedRectangleFill(this->_altclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
                     }
-                    Drawer->RenderRectangleFill(this->fcs, cx, cy, cw, ch);
+                    Drawer->RenderRectangleFill(this->_innerclr, cx, cy, cw, ch);
                 }
-                else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
+                //else Drawer->RenderRectangleFill(this->_innerclr, cx, cy, cw, ch);
                 auto itm = this->itms[i];
                 s32 xh = pu::ui::render::GetTextHeight(this->font, itm->GetName());
                 s32 tx = (cx + 25);
@@ -574,28 +593,14 @@ namespace elm
             }
         }
     }
-    
-    pu::ui::render::NativeTexture NinContentMenu::GetTextContent(std::string text, bool selected)
-    {
-        std::string indexText = (selected) ? text + "_select" : text;
-        if (_contents.count(indexText) == 0 || _contents[indexText] == NULL)
-        {
-            if(selected)
-            {
-                _contents[indexText] = pu::ui::render::RenderText(this->font, text, this->_altclr);
-            }
-            else
-                _contents[indexText] = pu::ui::render::RenderText(this->font, text, this->_txtclr);
-        }
-            
-        return _contents[indexText];
-    }
 
     void NinContentMenu::ReloadItemRenders()
     {
         for (u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for (u32 i = 0; i < this->loadedvalues.size(); i++) pu::ui::render::DeleteTexture(this->loadedvalues[i]);
         for (u32 i = 0; i < this->loadedicons.size(); i++) pu::ui::render::DeleteTexture(this->loadedicons[i]);
         this->loadednames.clear();
+        this->loadedvalues.clear();
         this->loadedicons.clear();
         s32 its = this->ishow;
         if (its > this->itms.size()) its = this->itms.size();
@@ -605,6 +610,9 @@ namespace elm
             auto strname = this->itms[i]->GetName();
             auto tex = pu::ui::render::RenderText(this->font, strname, this->itms[i]->GetColor());
             this->loadednames.push_back(tex);
+            auto strvalue = this->itms[i]->GetValue();
+            auto vtex = pu::ui::render::RenderText(this->font, strvalue, this->itms[i]->GetValueColor());
+            this->loadedvalues.push_back(vtex);
             if (this->itms[i]->HasIcon())
             {
                 auto stricon = this->itms[i]->GetIcon();

@@ -92,7 +92,6 @@ namespace elm
         };
         this->icdown = false;
         this->dtouch = false;
-        this->fcs = {40, 40, 40, 255};
         this->basestatus = 0;
         this->font = pu::ui::render::LoadDefaultFont(25);
 
@@ -103,6 +102,7 @@ namespace elm
         this->_altclr = {115, 223, 235, 255};
         this->_baseclr = {61, 61, 61, 255};
         this->_innerclr = {28, 33, 37, 255};
+        this->_lineclr = {45, 79, 238, 255};
     }
 
     s32 NinMenu::GetX()
@@ -170,23 +170,14 @@ namespace elm
         this->clr = Color;
     }
 
-    void NinMenu::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor)
+    void NinMenu::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor)
     {
         this->_txtclr = TextColor;
         this->_borderclr = BorderColor;
         this->_altclr = AltBorderColor;
         this->_innerclr = InnerBorderColor;
         this->_baseclr = BaseColor;
-    }
-
-    pu::ui::Color NinMenu::GetOnFocusColor()
-    {
-        return this->fcs;
-    }
-
-    void NinMenu::SetOnFocusColor(pu::ui::Color Color)
-    {
-        this->fcs = Color;
+        this->_lineclr = LineColor;
     }
     
     void NinMenu::SetIsFocused(bool isFocus)
@@ -217,7 +208,12 @@ namespace elm
     void NinMenu::ClearItems()
     {
         this->itms.clear();
+        for(auto &name : this->loadednames)
+            pu::ui::render::DeleteTexture(name);
         this->loadednames.clear();
+        for(auto &icon : this->loadedicons)
+            if(icon != NULL)
+                pu::ui::render::DeleteTexture(icon);
         this->loadedicons.clear();
     }
 
@@ -302,11 +298,11 @@ namespace elm
                         {
                             Drawer->RenderRoundedRectangleFill(this->_altclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
                         }
-                        Drawer->RenderRectangleFill(this->fcs, cx, cy, cw, ch);
+                        Drawer->RenderRectangleFill(this->_innerclr, cx, cy, cw, ch);
                     }
-                    Drawer->RenderRectangleFill(this->_altclr, cx+8, cy+10, 3, ch-20);
+                    Drawer->RenderRectangleFill(this->_lineclr, cx+8, cy+10, 3, ch-20);
                 }
-                else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
+                //else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
                 auto itm = this->itms[i];
                 s32 xh = pu::ui::render::GetTextHeight(this->font, itm->GetName());
                 s32 tx = (cx + 25);
@@ -522,7 +518,7 @@ namespace elm
         {
             if(selected)
             {
-                _contents[indexText] = pu::ui::render::RenderText(this->font, text, this->_altclr);
+                _contents[indexText] = pu::ui::render::RenderText(this->font, text, this->_lineclr);
             }
             else
                 _contents[indexText] = pu::ui::render::RenderText(this->font, text, this->_txtclr);

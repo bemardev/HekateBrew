@@ -20,6 +20,8 @@
 #include <ui/ui_HkConfigLayout.hpp>
 #include <ui/ui_PayloadLayout.hpp>
 #include <ui/ui_LoadingOverlay.hpp>
+#include <ui/ui_OptionsLayout.hpp>
+#include <ui/ui_ListDialog.hpp>
 #include <set/set_Settings.hpp>
 #include <elm/elm_SeparatorLine.hpp>
 #include <Types.hpp>
@@ -38,9 +40,12 @@ namespace ui
         MainPageLayout::Ref &GetMainPageLayout();
         HkConfigLayout::Ref &GetHkConfigLayout();
         PayloadLayout::Ref &GetPayloadLayout();
+        OptionsLayout::Ref &GetOptionsLayout();
 
-        void showNotification(std::string text);
+        void showNotification(std::string text, int delay=1500);
         int CreateShowDialog(pu::String Title, pu::String Content, std::vector<pu::String> Options, bool UseLastOptionAsCancel, std::string Icon = "");
+        std::string CreateFileDialog(std::string title, std::string BeginPath);
+        int CreateListDialog(std::string title, std::vector<ListDialogItem::Ref> &listItems);
         void endWithErrorMessage(std::string errMessage);
         void ShowLoading(bool close = false);
         void mainClose();
@@ -53,19 +58,21 @@ namespace ui
         MainPageLayout::Ref mainPage;
         HkConfigLayout::Ref configPage;
         PayloadLayout::Ref payloadPage;
+        OptionsLayout::Ref optionsPage;
 
         void OnInput(u64 Down, u64 Up, u64 Held);
     };
 
     static const ColorScheme DefaultDark = {
         { 45, 45, 45, 1}, // background layout color
-        { 61, 61, 61, 255}, // background imagebutton color
+        { 70, 70, 70, 255}, // background imagebutton color
         { 115, 223, 235, 255}, // focus color
         { 255, 255, 255, 255}, // menu text color
         { 255, 255, 255, 255}, // grid text
         { 18, 187, 254, 255}, // grid border color
         { 115, 223, 235, 255}, // grid alternate border color
-        { 28, 33, 37, 255}, // grid inner border color
+        { 58, 61, 66, 255}, // grid inner border color
+        { 104, 110, 108, 255}, // line & disabled text color
         "romfs:/LaunchIcon.png",
         "romfs:/MoreConfigIcon.png",
         "romfs:/PayloadIcon.png",
@@ -75,14 +82,15 @@ namespace ui
     };
 
     static const ColorScheme DefaultLight = {
-        { 218, 220, 233, 1}, // background layout color
-        { 242, 243, 247, 255}, // background imagebutton color
-        { 24, 202, 180, 255}, // focus color
+        { 235, 235, 235, 1}, // background layout color
+        { 240, 240, 240, 255}, // background imagebutton color
+        { 45, 79, 238, 255}, // focus color
         { 15, 15, 15, 255}, // menu text color
         { 15, 15, 15, 255}, // grid text
-        { 17, 134, 141, 255}, // grid border color
-        { 24, 202, 180, 255}, // grid alternate border color
-        { 224, 255, 255, 255}, // grid inner border color
+        { 85, 253, 217, 255}, // grid border color
+        { 12, 191, 195, 255}, // grid alternate border color
+        { 253, 253, 253, 255}, // grid inner border color
+        { 182, 185, 192, 255}, // line & disabled text color
         "romfs:/LaunchIcon.l.png",
         "romfs:/MoreConfigIcon.l.png",
         "romfs:/PayloadIcon.l.png",

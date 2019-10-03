@@ -16,10 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include <ui/ui_MainApplication.hpp>
+#include <ui/ui_FileDialog.hpp>
 #include <cfw/cfw_Helper.hpp>
 #include <set/set_Settings.hpp>
 #include <PayloadReboot.hpp>
-#include <Utils.hpp>
 
 set::Settings gsets;
 
@@ -28,7 +28,6 @@ namespace ui
 
     MainApplication::MainApplication() : pu::ui::Application()
     {
-
         gsets = set::ProcessSettings();
         pu::ui::render::SetDefaultFontFromShared(pu::ui::render::SharedFont::Standard);
 
@@ -52,6 +51,10 @@ namespace ui
         this->payloadPage = PayloadLayout::New();
         this->payloadPage->Add(this->topSeparator);
         this->payloadPage->Add(this->bottomSeparator);
+        
+        this->optionsPage = OptionsLayout::New();
+        this->optionsPage->Add(this->topSeparator);
+        this->optionsPage->Add(this->bottomSeparator);        
     }
 
     MainPageLayout::Ref &MainApplication::GetMainPageLayout()
@@ -69,15 +72,20 @@ namespace ui
         return this->payloadPage;
     }
 
+    OptionsLayout::Ref &MainApplication::GetOptionsLayout()
+    {
+        return this->optionsPage;
+    }
+    
     void MainApplication::OnInput(u64 Down, u64 Up, u64 Held)
     {
     }
 
-    void MainApplication::showNotification(std::string text)
+    void MainApplication::showNotification(std::string text, int delay)
     {
         this->EndOverlay();
         this->toast->SetText(text);
-        this->StartOverlayWithTimeout(this->toast, 1500);
+        this->StartOverlayWithTimeout(this->toast, delay);
     }
 
     int MainApplication::CreateShowDialog(pu::String Title, pu::String Content, std::vector<pu::String> Options, bool UseLastOptionAsCancel, std::string Icon)
@@ -98,6 +106,28 @@ namespace ui
         else if (!dlg.IsOk()) opt = -2;
         return opt;
     }
+    
+    std::string MainApplication::CreateFileDialog(std::string title, std::string BeginPath)
+    {
+        ui::FileDialog* fdlg = new ui::FileDialog(BeginPath);
+        fdlg->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.GridBord, gsets.CustomScheme.GridAlt, gsets.CustomScheme.GridInner, gsets.CustomScheme.Base, gsets.CustomScheme.LineSep, gsets.CustomScheme.BaseFocus);
+        std::string selectedPath = fdlg->Show(this->rend, this);
+        if(fdlg->UserCancelled()) selectedPath = std::string();
+        delete fdlg;
+        return selectedPath;
+    }
+    
+    int MainApplication::CreateListDialog(std::string title, std::vector<ListDialogItem::Ref> &listItems)
+    {
+        ui::ListDialog* ldlg = new ui::ListDialog(title);
+        ldlg->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.GridBord, gsets.CustomScheme.GridAlt, gsets.CustomScheme.GridInner, gsets.CustomScheme.Base, gsets.CustomScheme.LineSep, gsets.CustomScheme.BaseFocus);
+        for(auto &entry : listItems)
+            ldlg->AddItem(entry);
+        int idxSelected = ldlg->Show(this->rend, this);
+        if(ldlg->UserCancelled()) idxSelected = -1;
+        delete ldlg;
+        return idxSelected;
+    }
 
     void MainApplication::mainClose()
     {
@@ -110,7 +140,7 @@ namespace ui
 
     void MainApplication::endWithErrorMessage(std::string errMessage)
     {
-        int sopt = this->CreateShowDialog("Error", errMessage,{"OK"}, false, gsets.CustomScheme.warnImage);
+        int sopt = this->CreateShowDialog("Error", errMessage, {"OK"}, false, gsets.CustomScheme.warnImage);
         if (sopt == 0)
         {
             this->CloseWithFadeOut();

@@ -31,7 +31,9 @@ namespace ui
         this->Add(this->iconLaunch);
         this->iconClose = elm::TextIcon::New(this->iconLaunch->GetX() - 40, 670, "Exit", Icons::Icon_B, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
         this->Add(this->iconClose);
-        this->iconReboot = elm::TextIcon::New(1220, 20, "Reboot to RCM", Icons::Icon_ZR, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
+        this->iconOptions = elm::TextIcon::New(1220, 20, "Options", Icons::Icon_Plus, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
+        this->Add(this->iconOptions);
+        this->iconReboot = elm::TextIcon::New(this->iconOptions->GetX() - 40, 20, "Reboot to RCM", Icons::Icon_ZR, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
         this->Add(this->iconReboot);
         this->iconHReboot = elm::TextIcon::New(this->iconReboot->GetX() - 40, 20, "Reboot to Hekate", Icons::Icon_ZL, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
         this->Add(this->iconHReboot);
@@ -138,6 +140,12 @@ namespace ui
         else if ((Down & KEY_ZL))
         {
             PayloadReboot::RebootHekate(gsets.hbConfig.path);
+        }
+        else if ((Down & KEY_PLUS))
+        {
+            this->Unload();
+            mainapp->LoadLayout(mainapp->GetOptionsLayout());
+            mainapp->GetOptionsLayout()->Load();
         }
     }
 }

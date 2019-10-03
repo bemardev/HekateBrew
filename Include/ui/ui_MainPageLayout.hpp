@@ -34,6 +34,7 @@ namespace ui
         void buttonGrid_OnClick(int btnIndex);
         elm::TextIcon::Ref iconClose;
         elm::TextIcon::Ref iconLaunch;
+        elm::TextIcon::Ref iconOptions;
         elm::TextIcon::Ref iconReboot;
         elm::TextIcon::Ref iconHReboot;
         pu::ui::elm::TextBlock::Ref pageName;

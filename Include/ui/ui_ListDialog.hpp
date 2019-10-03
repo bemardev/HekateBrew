@@ -24,13 +24,38 @@
 #include <filesystem>
 
 namespace ui
-{    
+{   
+    class ListDialogItem
+    {
+        public:
+            ListDialogItem(pu::String Name);
+            PU_SMART_CTOR(ListDialogItem)
+            ~ListDialogItem();
+            
+            pu::String GetName();
+            void SetName(pu::String Name);
+            pu::ui::Color GetColor();
+            void SetColor(pu::ui::Color Color);
+            std::string GetIcon();
+            void SetIcon(std::string Icon);
+            bool HasIcon();
+            bool IsSelected();
+            void SetSelected(bool Selected);
+        private:
+            pu::String name;
+            pu::ui::Color clr;
+            bool hasicon;
+            std::string icon;
+            bool _selected;
+    };
+    
     class ListDialog
     {
         public:
-            ListDialog(std::string Title, s32 X, s32 Y, s32 Width, s32 Height, pu::ui::Color OptionColor, s32 ItemSize, s32 ItemsToShow);
+            ListDialog(std::string Title);
             PU_SMART_CTOR(ListDialog)
-
+            ~ListDialog();
+            
             s32 GetX();
             void SetX(s32 X);
             s32 GetY();
@@ -42,18 +67,14 @@ namespace ui
             void SetItemSize(s32 ItemSize);
             s32 GetNumberOfItemsToShow();
             void SetNumberOfItemsToShow(s32 ItemsToShow);
-            pu::ui::Color GetColor();
-            void SetColor(pu::ui::Color Color);
-            pu::ui::Color GetOnFocusColor();
-            void SetOnFocusColor(pu::ui::Color Color);
-            pu::ui::Color GetScrollbarColor();
-            void SetScrollbarColor(pu::ui::Color Color);
+            void SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor, pu::ui::Color BaseFocus);
             void SetOnSelectionChanged(std::function<void()> Callback);
-            void AddItem(std::string Item);
+            void AddItem(ListDialogItem::Ref Item);
             void ClearItems();
             void SetCooldownEnabled(bool Cooldown);
-            std::vector<std::string> GetItems();
+            std::vector<ListDialogItem::Ref> GetItems();
             s32 GetSelectedIndex();
+            void SetSelectedIndex(s32 Index);
             void OnRender(pu::ui::render::Renderer::Ref &Drawer, s32 X, s32 Y);
             int Show(pu::ui::render::Renderer::Ref &Drawer, void *App);
             void OnInput(u64 Down, u64 Up, u64 Held, bool Touch);
@@ -64,28 +85,39 @@ namespace ui
             elm::TextIcon::Ref iconLaunch;
             elm::TextIcon::Ref iconCancel;
             bool dtouch;
+            s32 isize;
+            s32 ishow;
+            s32 fisel;
+            s32 isel;
             s32 x;
             s32 y;
             s32 w;
             s32 h;
-            s32 isize;
-            s32 ishow;
-            s32 previsel;
-            s32 fisel;
-            s32 isel;
-            s32 pselfact;
-            s32 selfact;
-            pu::ui::Color scb;
-            pu::ui::Color clr;
-            pu::ui::Color fcs;
-            bool icdown;
             bool cancel;
-            int basestatus;
-            std::chrono::time_point<std::chrono::steady_clock> basetime;
+            std::chrono::time_point<std::chrono::steady_clock> blinktime;
+            bool _blink;
             std::function<void()> onselch;
-            std::vector<std::string> itms;
+            std::vector<ListDialogItem::Ref> itms;
             pu::ui::render::NativeFont font;
             pu::ui::render::NativeFont icofont;
+            pu::ui::render::NativeTexture istex;
+            pu::ui::Color _txtclr;
+            pu::ui::Color _borderclr;
+            pu::ui::Color _altclr;
+            pu::ui::Color _baseclr;
+            pu::ui::Color _innerclr;
+            pu::ui::Color _lineclr;
+            pu::ui::Color _bfocus;
+            
+            s32 previsel;
+            s32 pselfact;
+            s32 selfact;
+            
+            bool icdown;
+            
+            int basestatus;
+            std::chrono::time_point<std::chrono::steady_clock> basetime;
             std::vector<pu::ui::render::NativeTexture> loadednames;
+            std::vector<pu::ui::render::NativeTexture> loadedicons;            
     };
 }

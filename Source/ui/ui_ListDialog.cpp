@@ -16,22 +16,93 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include <ui/ui_ListDialog.hpp>
-#include <ui/ui_MainApplication.hpp>
 #include <IconTypes.hpp>
 #include <Utils.hpp>
 
 namespace ui
-{    
-    ListDialog::ListDialog(std::string Title, s32 X, s32 Y, s32 Width, s32 Height, pu::ui::Color OptionColor, s32 ItemSize, s32 ItemsToShow)
+{   
+    ListDialogItem::ListDialogItem(pu::String Name)
     {
-        this->x = X;
-        this->y = Y;
-        this->w = Width;
-        this->h = Height;
-        this->clr = OptionColor;
-        this->scb = { 110, 110, 110, 255 };
-        this->isize = ItemSize;
-        this->ishow = ItemsToShow;
+        this->clr = {10, 10, 10, 255};
+        this->name = Name;
+        this->hasicon = false;
+        this->_selected = false;
+    }
+    
+    ListDialogItem::~ListDialogItem()
+    {
+        if(this->hasicon)
+            this->hasicon = false;
+    }
+
+    pu::String ListDialogItem::GetName()
+    {
+        return this->name;
+    }
+
+    void ListDialogItem::SetName(pu::String Name)
+    {
+        this->name = Name;
+    }
+
+    pu::ui::Color ListDialogItem::GetColor()
+    {
+        return this->clr;
+    }
+
+    void ListDialogItem::SetColor(pu::ui::Color Color)
+    {
+        this->clr = Color;
+    }
+
+    std::string ListDialogItem::GetIcon()
+    {
+        return this->icon;
+    }
+
+    void ListDialogItem::SetIcon(std::string Icon)
+    {
+        std::ifstream ifs(Icon);
+        if (ifs.good())
+        {
+            this->icon = Icon;
+            this->hasicon = true;
+        }
+        ifs.close();
+    }
+
+    bool ListDialogItem::HasIcon()
+    {
+        return this->hasicon;
+    }
+    
+    bool ListDialogItem::IsSelected()
+    {
+        return this->_selected;
+    }
+    
+    void ListDialogItem::SetSelected(bool Selected)
+    {
+        this->_selected = Selected;
+    }
+    
+    ListDialog::ListDialog(std::string Title)
+    {       
+        this->blinktime = std::chrono::steady_clock::now();
+        this->_blink = true;
+        this->_txtclr = {255, 255, 255, 255};
+        this->_borderclr = {18, 187, 254, 255};
+        this->_altclr = {115, 223, 235, 255};
+        this->_baseclr = {70, 70, 70, 255};
+        this->_lineclr = {106, 106, 106, 255};
+        this->_innerclr = {58, 61, 66, 255};
+        
+        this->x = 0;
+        this->y = 0;
+        this->w = 1280;
+        this->h = 0;
+        this->isize = 60; //Hardcoded as in Nintendo style //old : ItemSize;
+        this->ishow = 7; //Hardcoded as in Nintendo style //old : ItemsToShow;
         this->previsel = 0;
         this->isel = 0;
         this->fisel = 0;
@@ -40,14 +111,27 @@ namespace ui
         this->onselch = [&](){};
         this->icdown = false;
         this->dtouch = false;
-        this->fcs = { 40, 40, 40, 255 };
         this->basestatus = 0;
         this->font = pu::ui::render::LoadDefaultFont(25);
         this->icofont = pu::ui::render::LoadSharedIconFont(pu::ui::render::SharedFont::NintendoExtended, 25);
         this->title = Title;
         this->cancel = false;
-        this->iconLaunch = elm::TextIcon::New(1060, this->GetY() + 530, "Ok", Icons::Icon_A, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
-        this->iconCancel = elm::TextIcon::New(this->iconLaunch->GetX() - 40, this->GetY() + 530, "Cancel", Icons::Icon_B, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
+        this->istex = pu::ui::render::RenderIcon(this->icofont, Icons::Icon_Checked, this->_bfocus);
+        this->iconLaunch = elm::TextIcon::New(1220, 670, "Ok", Icons::Icon_A, this->_txtclr, elm::TextIconAlign::Right);
+        this->iconCancel = elm::TextIcon::New(this->iconLaunch->GetX() - 40, 670, "Cancel", Icons::Icon_B, this->_txtclr, elm::TextIconAlign::Right);
+    }
+    
+    ListDialog::~ListDialog()
+    {
+        if(this->istex != NULL)
+        {
+            pu::ui::render::DeleteTexture(this->istex);
+            this->istex = NULL;
+        }
+        for(u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for(u32 i = 0; i < this->loadedicons.size(); i++) pu::ui::render::DeleteTexture(this->loadedicons[i]);
+        this->loadednames.clear();
+        this->loadedicons.clear();
     }
 
     s32 ListDialog::GetX()
@@ -104,35 +188,20 @@ namespace ui
     {
         this->ishow = ItemsToShow;
     }
-
-    pu::ui::Color ListDialog::GetColor()
-    {
-        return this->clr;
-    }
-
-    void ListDialog::SetColor(pu::ui::Color Color)
-    {
-        this->clr = Color;
-    }
     
-    pu::ui::Color ListDialog::GetOnFocusColor()
+    void ListDialog::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor, pu::ui::Color BaseFocus)
     {
-        return this->fcs;
-    }
-
-    void ListDialog::SetOnFocusColor(pu::ui::Color Color)
-    {
-        this->fcs = Color;
-    }
-
-    pu::ui::Color ListDialog::GetScrollbarColor()
-    {
-        return this->scb;
-    }
-
-    void ListDialog::SetScrollbarColor(pu::ui::Color Color)
-    {
-        this->scb = Color;
+        this->_txtclr = TextColor;
+        this->_borderclr = BorderColor;
+        this->_altclr = AltBorderColor;
+        this->_innerclr = InnerBorderColor;
+        this->_baseclr = BaseColor;
+        this->_lineclr = LineColor;
+        this->_bfocus = BaseFocus;
+        pu::ui::render::DeleteTexture(this->istex);
+        this->istex = pu::ui::render::RenderIcon(this->icofont, Icons::Icon_Checked, this->_bfocus);
+        this->iconLaunch->SetColor(this->_txtclr);
+        this->iconCancel->SetColor(this->_txtclr);
     }
 
     void ListDialog::SetOnSelectionChanged(std::function<void()> Callback)
@@ -140,7 +209,7 @@ namespace ui
         this->onselch = Callback;
     }
 
-    void ListDialog::AddItem(std::string Item)
+    void ListDialog::AddItem(ListDialogItem::Ref Item)
     {
         this->itms.push_back(Item);
     }
@@ -156,7 +225,7 @@ namespace ui
         this->icdown = Cooldown;
     }
 
-    std::vector<std::string> ListDialog::GetItems()
+    std::vector<ListDialogItem::Ref> ListDialog::GetItems()
     {
         return this->itms;
     }
@@ -165,27 +234,66 @@ namespace ui
     {
         return this->isel;
     }
+    
+    void ListDialog::SetSelectedIndex(s32 Index)
+    {
+        if (this->itms.size() > Index)
+        {
+            this->isel = Index;
+            this->previsel = Index;
+            this->fisel = 0;
+            if (this->isel >= (this->itms.size() - this->ishow)) this->fisel = this->itms.size() - this->ishow;
+            else if (this->isel < this->ishow) this->fisel = 0;
+            else this->fisel = this->isel;
+
+            ReloadItemRenders();
+        }
+    }
 
     int ListDialog::Show(pu::ui::render::Renderer::Ref &Drawer, void *App)
     {
-        pu::ui::Color ovclr({gsets.CustomScheme.Base.R, gsets.CustomScheme.Base.G, gsets.CustomScheme.Base.B, 140});
-        auto titletex = pu::ui::render::RenderText(this->font, this->title, gsets.CustomScheme.Text);
-        s32 ttw = pu::ui::render::GetTextWidth(this->font, this->title);
+        pu::ui::Color ovclr({this->_baseclr.R, this->_baseclr.G, this->_baseclr.B, 140});
+        // Check popup height
+        if(this->itms.size() >= this->ishow)
+            this->SetY(129);
+        else
+            this->SetY(720 - (73 /*bottom buttons*/ + 10*2 /*padding before/after elements*/ + 72 /*top text title*/ + this->isize*this->itms.size()));
+        auto titletex = pu::ui::render::RenderText(this->font, this->title, this->_txtclr);
         s32 tth = pu::ui::render::GetTextHeight(this->font, this->title);
-        s32 telmx = this->GetX() + ((this->GetWidth() - ttw) / 2);
-        s32 telmy = this->GetY() + ((60 - tth) / 2);
+        s32 telmy = this->GetY()+11 + ((60 - tth) / 2);
+        int _selectedIdx=0;
+        for(auto &it : this->itms)
+        {
+            if(it->IsSelected())
+            {
+                this->SetSelectedIndex(_selectedIdx);
+                break;
+            }
+            _selectedIdx+=1;
+        }
+        
         bool end = false;
         while(true)
         {
             bool ok = ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref &Drawer) -> bool
             {
+                //Global overlay
                 Drawer->RenderRectangleFill(ovclr, 0, 0, 1280, 720);
-                Drawer->RenderRoundedRectangleFill(gsets.CustomScheme.Base, this->GetX(), this->GetY(), this->GetWidth(), this->GetHeight(), 20);
-                Drawer->RenderTexture(titletex, telmx, telmy);
-                Drawer->RenderShadowSimple(this->GetX(), this->GetY()+60, this->GetWidth(), 5, 160);
+                //Popup back color
+                Drawer->RenderRectangleFill(this->_baseclr, this->GetX(), this->GetY(), this->GetWidth(), 720-this->GetY());
+                //Top Separator Line
+                Drawer->RenderLine(this->_txtclr, 30, this->GetY() + 71, 1250, this->GetY() + 71);
+                //Bottom Separator Line
+                Drawer->RenderLine(this->_txtclr, 30, 647, 1250, 647);
+                //Title Text
+                Drawer->RenderTexture(titletex, 72, telmy);
+                // Top element separator
+                Drawer->RenderLine(this->_lineclr, 280, this->GetY()+82, 1000, this->GetY()+82);
                 u64 d = hidKeysDown(CONTROLLER_P1_AUTO);
                 if((d & KEY_DDOWN) || (d & KEY_LSTICK_DOWN))
                 {
+                    this->blinktime = std::chrono::steady_clock::now();
+                    this->_blink = true;
                     if(this->isel < (this->itms.size() - 1))
                     {
                         if((this->isel - this->fisel) == (this->ishow - 1))
@@ -219,6 +327,8 @@ namespace ui
                 }
                 else if((d & KEY_DUP) || (d & KEY_LSTICK_UP))
                 {
+                    this->blinktime = std::chrono::steady_clock::now();
+                    this->_blink = true;
                     if(this->isel > 0)
                     {
                         if(this->isel == this->fisel)
@@ -261,7 +371,7 @@ namespace ui
                     this->cancel = true;
                 }
                 u64 th = hidKeysDown(CONTROLLER_HANDHELD);
-                this->OnRender(Drawer, this->GetX(), this->GetY()+65);
+                this->OnRender(Drawer, 280, this->GetY()+83);
                 this->iconLaunch->OnRender(Drawer, this->iconLaunch->GetX(), this->iconLaunch->GetY());
                 this->iconCancel->OnRender(Drawer, this->iconCancel->GetX(), this->iconCancel->GetY());
                 if(end)
@@ -283,7 +393,7 @@ namespace ui
         {
             s32 cx = X;
             s32 cy = Y;
-            s32 cw = this->w;
+            s32 cw = 1000-280;
             s32 ch = this->isize;
             s32 its = this->ishow;
             if(its > this->itms.size()) its = this->itms.size();
@@ -291,68 +401,66 @@ namespace ui
             if(this->loadednames.empty()) ReloadItemRenders();
             for(s32 i = this->fisel; i < (its + this->fisel); i++)
             {
-                s32 clrr = this->clr.R;
-                s32 clrg = this->clr.G;
-                s32 clrb = this->clr.B;
-                s32 nr = clrr - 70;
-                if(nr < 0) nr = 0;
-                s32 ng = clrg - 70;
-                if(ng < 0) ng = 0;
-                s32 nb = clrb - 70;
-                if(nb < 0) nb = 0;
-                pu::ui::Color nclr(nr, ng, nb, this->clr.A);
                 auto loadedidx = i - this->fisel;
                 auto curname = this->loadednames[loadedidx];
+                auto curicon = this->loadedicons[loadedidx];
                 if(this->isel == i)
                 {
-                    Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                    if(this->selfact < 255)
+                    auto curtime = std::chrono::steady_clock::now();
+                    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(curtime - this->blinktime).count();
+                    if (diff >= 500)
                     {
-                        Drawer->RenderRectangleFill(pu::ui::Color(this->fcs.R, this->fcs.G, this->fcs.B, this->selfact), cx, cy, cw, ch);
-                        this->selfact += 48;
+                        this->_blink = !this->_blink;
+                        this->blinktime = std::chrono::steady_clock::now();
                     }
-                    else Drawer->RenderRectangleFill(this->fcs, cx, cy, cw, ch);
-                }
-                else if(this->previsel == i)
-                {
-                    Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                    if(this->pselfact > 0)
+                    if (this->_blink)
                     {
-                        Drawer->RenderRectangleFill(pu::ui::Color(this->fcs.R, this->fcs.G, this->fcs.B, this->pselfact), cx, cy, cw, ch);
-                        this->pselfact -= 48;
+                        Drawer->RenderRoundedRectangleFill(this->_borderclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
                     }
-                    else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
+                    else
+                    {
+                        Drawer->RenderRoundedRectangleFill(this->_altclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
+                    }
+                    Drawer->RenderRectangleFill(this->_innerclr, cx, cy, cw, ch);
                 }
-                else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                auto itm = this->itms[i];
-                s32 xh = pu::ui::render::GetTextHeight(this->font, itm);
-                s32 tx = (cx + 25);
+                s32 xh = pu::ui::render::GetTextHeight(this->font, this->itms[i]->GetName());
+                s32 tx = (cx + 15);
                 s32 ty = ((ch - xh) / 2) + cy;
+                // position X icon selected : 1000-15-iconWidth
+                if(this->itms[i]->HasIcon())
+                {
+                    Drawer->RenderTextureScaled(curicon, tx, cy+5, 50, 50);
+                    tx+=65;
+                }
                 Drawer->RenderTexture(curname, tx, ty);
-                cy += ch;
+                if(this->itms[i]->IsSelected())
+                {
+                    Drawer->RenderTexture(this->istex, 1000-15-25, ty);
+                }
+                Drawer->RenderLine(this->_lineclr, 280, cy+60, 1000, cy+60);
+                cy += ch+1;
             }
             if(this->ishow < this->itms.size())
             {
-                s32 sccr = this->scb.R;
-                s32 sccg = this->scb.G;
-                s32 sccb = this->scb.B;
+                s32 sccr = this->_lineclr.R;
+                s32 sccg = this->_lineclr.G;
+                s32 sccb = this->_lineclr.B;
                 s32 snr = sccr - 30;
                 if(snr < 0) snr = 0;
                 s32 sng = sccg - 30;
                 if(sng < 0) sng = 0;
                 s32 snb = sccb - 30;
                 if(snb < 0) snb = 0;
-                pu::ui::Color sclr(snr, sng, snb, this->scb.A);
+                pu::ui::Color sclr(snr, sng, snb, this->_lineclr.A);
                 s32 scx = X + (this->w - 20);
                 s32 scy = Y;
                 s32 scw = 20;
                 s32 sch = (this->ishow * this->isize);
-                Drawer->RenderRectangleFill(this->scb, scx, scy, scw, sch);
+                Drawer->RenderRectangleFill(this->_lineclr, scx, scy, scw, sch);
                 s32 fch = ((this->ishow * sch) / this->itms.size());
                 s32 fcy = scy + (this->fisel * (sch / this->itms.size()));
                 Drawer->RenderRectangleFill(sclr, scx, fcy, scw, fch);
             }
-            Drawer->RenderShadowSimple(cx, cy, cw, 5, 160);
         }
     }
 
@@ -409,15 +517,28 @@ namespace ui
     void ListDialog::ReloadItemRenders()
     {
         for(u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for(u32 i = 0; i < this->loadedicons.size(); i++) pu::ui::render::DeleteTexture(this->loadedicons[i]);
         this->loadednames.clear();
+        this->loadedicons.clear();
         s32 its = this->ishow;
         if(its > this->itms.size()) its = this->itms.size();
         if((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
         for(s32 i = this->fisel; i < (its + this->fisel); i++)
         {
-            auto strname = this->itms[i];
-            auto tex = pu::ui::render::RenderText(this->font, strname, gsets.CustomScheme.Text);
+            auto strname = this->itms[i]->GetName();
+            pu::ui::render::NativeTexture tex;
+            if(this->itms[i]->IsSelected())
+                tex = pu::ui::render::RenderText(this->font, strname, this->_bfocus);
+            else
+                 tex = pu::ui::render::RenderText(this->font, strname, this->_txtclr);
             this->loadednames.push_back(tex);
+            if (this->itms[i]->HasIcon())
+            {
+                auto stricon = this->itms[i]->GetIcon();
+                auto icontex = pu::ui::render::LoadImage(stricon);
+                this->loadedicons.push_back(icontex);
+            }
+            else this->loadedicons.push_back(NULL);
         }
     }
 }

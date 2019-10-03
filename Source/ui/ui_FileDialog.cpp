@@ -16,42 +16,61 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include <ui/ui_FileDialog.hpp>
-#include <ui/ui_MainApplication.hpp>
 #include <IconTypes.hpp>
 #include <Utils.hpp>
 
 namespace ui
 {
-    bool sortByName(const File &lfile, const File &rfile) { return lfile.name < rfile.name; }
-    
-    FileDialog::FileDialog(std::string Title, std::string BeginPath, s32 X, s32 Y, s32 Width, s32 Height, pu::ui::Color OptionColor, s32 ItemSize, s32 ItemsToShow)
+
+    FileDialog::FileDialog(std::string BeginPath)
     {
-        this->x = X;
-        this->y = Y;
-        this->w = Width;
-        this->h = Height;
-        this->clr = OptionColor;
-        this->scb = { 110, 110, 110, 255 };
-        this->isize = ItemSize;
-        this->ishow = ItemsToShow;
+        this->currentPath = BeginPath;
+        this->blinktime = std::chrono::steady_clock::now();
+        this->_blink = true;
+        this->_txtclr = {255, 255, 255, 255};
+        this->_borderclr = {18, 187, 254, 255};
+        this->_altclr = {115, 223, 235, 255};
+        this->_baseclr = {70, 70, 70, 255};
+        this->_lineclr = {106, 106, 106, 255};
+        this->_innerclr = {58, 61, 66, 255};
+
+        this->x = 0;
+        this->y = 129;
+        this->w = 1280;
+        this->h = 0;
+        this->isize = 60; //Hardcoded as in Nintendo style //old : ItemSize;
+        this->ishow = 7; //Hardcoded as in Nintendo style //old : ItemsToShow;
         this->previsel = 0;
         this->isel = 0;
         this->fisel = 0;
         this->selfact = 255;
         this->pselfact = 0;
-        this->onselch = [&](){};
+        this->onselch = [&]()
+        {
+        };
         this->icdown = false;
         this->dtouch = false;
-        this->fcs = { 40, 40, 40, 255 };
         this->basestatus = 0;
         this->font = pu::ui::render::LoadDefaultFont(25);
         this->icofont = pu::ui::render::LoadSharedIconFont(pu::ui::render::SharedFont::NintendoExtended, 25);
-        this->title = Title;
-        this->currentPath = BeginPath;
         this->cancel = false;
-        this->iconLaunch = elm::TextIcon::New(1060, this->GetY() + 530, "Ok", Icons::Icon_A, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
-        this->iconSelect = elm::TextIcon::New(this->iconLaunch->GetX() - 40, this->GetY() + 530, "Select", Icons::Icon_X, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
-        this->iconCancel = elm::TextIcon::New(this->iconSelect->GetX() - 40, this->GetY() + 530, "Cancel", Icons::Icon_B, gsets.CustomScheme.Text, elm::TextIconAlign::Right);
+        this->istex = pu::ui::render::RenderIcon(this->icofont, Icons::Icon_Checked, this->_bfocus);
+        this->iconLaunch = elm::TextIcon::New(1220, 670, "Ok", Icons::Icon_A, this->_txtclr, elm::TextIconAlign::Right);
+        this->iconSelect = elm::TextIcon::New(this->iconLaunch->GetX() - 40, 670, "Select", Icons::Icon_X, this->_txtclr, elm::TextIconAlign::Right);
+        this->iconCancel = elm::TextIcon::New(this->iconSelect->GetX() - 40, 670, "Cancel", Icons::Icon_B, this->_txtclr, elm::TextIconAlign::Right);
+    }
+
+    FileDialog::~FileDialog()
+    {
+        if (this->istex != NULL)
+        {
+            pu::ui::render::DeleteTexture(this->istex);
+            this->istex = NULL;
+        }
+        for (u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for (u32 i = 0; i < this->loadedicons.size(); i++) pu::ui::render::DeleteTexture(this->loadedicons[i]);
+        this->loadednames.clear();
+        this->loadedicons.clear();
     }
 
     s32 FileDialog::GetX()
@@ -109,37 +128,23 @@ namespace ui
         this->ishow = ItemsToShow;
     }
 
-    pu::ui::Color FileDialog::GetColor()
+    void FileDialog::SetColorScheme(pu::ui::Color TextColor, pu::ui::Color BorderColor, pu::ui::Color AltBorderColor, pu::ui::Color InnerBorderColor, pu::ui::Color BaseColor, pu::ui::Color LineColor, pu::ui::Color BaseFocus)
     {
-        return this->clr;
+        this->_txtclr = TextColor;
+        this->_borderclr = BorderColor;
+        this->_altclr = AltBorderColor;
+        this->_innerclr = InnerBorderColor;
+        this->_baseclr = BaseColor;
+        this->_lineclr = LineColor;
+        this->_bfocus = BaseFocus;
+        pu::ui::render::DeleteTexture(this->istex);
+        this->istex = pu::ui::render::RenderIcon(this->icofont, Icons::Icon_Checked, this->_bfocus);
+        this->iconLaunch->SetColor(this->_txtclr);
+        this->iconSelect->SetColor(this->_txtclr);
+        this->iconCancel->SetColor(this->_txtclr);
     }
 
-    void FileDialog::SetColor(pu::ui::Color Color)
-    {
-        this->clr = Color;
-    }
-    
-    pu::ui::Color FileDialog::GetOnFocusColor()
-    {
-        return this->fcs;
-    }
-
-    void FileDialog::SetOnFocusColor(pu::ui::Color Color)
-    {
-        this->fcs = Color;
-    }
-
-    pu::ui::Color FileDialog::GetScrollbarColor()
-    {
-        return this->scb;
-    }
-
-    void FileDialog::SetScrollbarColor(pu::ui::Color Color)
-    {
-        this->scb = Color;
-    }
-
-    void FileDialog::SetOnSelectionChanged(std::function<void()> Callback)
+    void FileDialog::SetOnSelectionChanged(std::function<void() > Callback)
     {
         this->onselch = Callback;
     }
@@ -169,7 +174,22 @@ namespace ui
     {
         return this->isel;
     }
-        
+
+    void FileDialog::SetSelectedIndex(s32 Index)
+    {
+        if (this->itms.size() > Index)
+        {
+            this->isel = Index;
+            this->previsel = Index;
+            this->fisel = 0;
+            if (this->isel >= (this->itms.size() - this->ishow)) this->fisel = this->itms.size() - this->ishow;
+            else if (this->isel < this->ishow) this->fisel = 0;
+            else this->fisel = this->isel;
+
+            ReloadItemRenders();
+        }
+    }
+
     void FileDialog::SetCurrentPath(std::string pathName)
     {
         this->itms.clear();
@@ -178,43 +198,49 @@ namespace ui
         {
             this->itms.push_back({entry, (pathName + R"(/)" + entry)});
         }
-        if(std::count(pathName.begin(), pathName.end(), '/') > 1)
-            pathName.erase(pathName.begin()+pathName.find_last_of("/"), pathName.end());
-        
-        this->itms.insert(this->itms.begin(), {"..", pathName});
+        if (std::count(pathName.begin(), pathName.end(), '/') > 1)
+            pathName.erase(pathName.begin() + pathName.find_last_of("/"), pathName.end());
+
+        this->itms.insert(this->itms.begin(),
+        {
+            "..", pathName
+        });
     }
 
     std::string FileDialog::Show(pu::ui::render::Renderer::Ref &Drawer, void *App)
     {
         this->SetCurrentPath(this->currentPath);
-        pu::ui::Color ovclr({gsets.CustomScheme.Base.R, gsets.CustomScheme.Base.G, gsets.CustomScheme.Base.B, 140});
-        auto titletex = pu::ui::render::RenderText(this->font, this->title, gsets.CustomScheme.Text);
-        auto pathtex = pu::ui::render::RenderText(this->font, this->currentPath, gsets.CustomScheme.BaseFocus);
-        s32 ttw = pu::ui::render::GetTextWidth(this->font, this->title);
-        s32 tth = pu::ui::render::GetTextHeight(this->font, this->title);
-        s32 telmx = this->GetX() + ((this->GetWidth() - ttw) / 2);
-        s32 telmy = this->GetY() + ((60 - tth) / 2);
+        pu::ui::Color ovclr({this->_baseclr.R, this->_baseclr.G, this->_baseclr.B, 140});
+        pu::ui::render::NativeTexture pathtex = NULL;
         bool end = false;
-        while(true)
+        while (true)
         {
-            bool ok = ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref &Drawer) -> bool
+            bool ok = ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref & Drawer) -> bool
             {
+                //Global overlay
                 Drawer->RenderRectangleFill(ovclr, 0, 0, 1280, 720);
-                Drawer->RenderRoundedRectangleFill(gsets.CustomScheme.Base, this->GetX(), this->GetY(), this->GetWidth(), this->GetHeight(), 20);
-                Drawer->RenderTexture(titletex, telmx, telmy);
-                Drawer->RenderShadowSimple(this->GetX(), this->GetY()+60, this->GetWidth(), 5, 160);
-                Drawer->RenderShadowSimple(this->GetX(), this->GetY()+120, this->GetWidth(), 5, 160);
-                s32 cth = pu::ui::render::GetTextHeight(this->font, this->currentPath);
-                s32 celmy = this->GetY() + 60 + ((60 - cth)/2);
-                pu::ui::render::DeleteTexture(pathtex);
-                pathtex = pu::ui::render::RenderText(this->font, this->currentPath, gsets.CustomScheme.BaseFocus);
-                Drawer->RenderTexture(pathtex, this->GetX()+25, celmy);
+                //Popup back color
+                Drawer->RenderRectangleFill(this->_baseclr, this->GetX(), this->GetY(), this->GetWidth(), 720 - this->GetY());
+                //Top Separator Line
+                Drawer->RenderLine(this->_txtclr, 30, this->GetY() + 71, 1250, this->GetY() + 71);
+                //Bottom Separator Line
+                Drawer->RenderLine(this->_txtclr, 30, 647, 1250, 647);
+                //CurrentPath Text
+                if(pathtex != NULL) pu::ui::render::DeleteTexture(pathtex);
+                pathtex = pu::ui::render::RenderText(this->font, this->currentPath, this->_bfocus);
+                s32 tth = pu::ui::render::GetTextHeight(this->font, this->currentPath);
+                s32 telmy = this->GetY() + 11 + ((60 - tth) / 2);
+                Drawer->RenderTexture(pathtex, 72, telmy);
+                // Top element separator
+                Drawer->RenderLine(this->_lineclr, 280, this->GetY() + 82, 1000, this->GetY() + 82);
                 u64 d = hidKeysDown(CONTROLLER_P1_AUTO);
-                if((d & KEY_DDOWN) || (d & KEY_LSTICK_DOWN))
+                if ((d & KEY_DDOWN) || (d & KEY_LSTICK_DOWN))
                 {
-                    if(this->isel < (this->itms.size() - 1))
+                    this->blinktime = std::chrono::steady_clock::now();
+                    this->_blink = true;
+                    if (this->isel < (this->itms.size() - 1))
                     {
-                        if((this->isel - this->fisel) == (this->ishow - 1))
+                        if ((this->isel - this->fisel) == (this->ishow - 1))
                         {
                             this->fisel++;
                             this->isel++;
@@ -226,10 +252,10 @@ namespace ui
                             this->previsel = this->isel;
                             this->isel++;
                             (this->onselch)();
-                            if(!this->itms.empty()) for(s32 i = 0; i < this->itms.size(); i++)
+                            if (!this->itms.empty()) for (s32 i = 0; i < this->itms.size(); i++)
                             {
-                                if(i == this->isel) this->selfact = 0;
-                                else if(i == this->previsel) this->pselfact = 255;
+                                if (i == this->isel) this->selfact = 0;
+                                else if (i == this->previsel) this->pselfact = 255;
                             }
                         }
                     }
@@ -237,17 +263,19 @@ namespace ui
                     {
                         this->isel = 0;
                         this->fisel = 0;
-                        if(this->itms.size() >= this->ishow)
+                        if (this->itms.size() >= this->ishow)
                         {
                             ReloadItemRenders();
                         }
                     }
                 }
-                else if((d & KEY_DUP) || (d & KEY_LSTICK_UP))
+                else if ((d & KEY_DUP) || (d & KEY_LSTICK_UP))
                 {
-                    if(this->isel > 0)
+                    this->blinktime = std::chrono::steady_clock::now();
+                    this->_blink = true;
+                    if (this->isel > 0)
                     {
-                        if(this->isel == this->fisel)
+                        if (this->isel == this->fisel)
                         {
                             this->fisel--;
                             this->isel--;
@@ -259,10 +287,10 @@ namespace ui
                             this->previsel = this->isel;
                             this->isel--;
                             (this->onselch)();
-                            if(!this->itms.empty()) for(s32 i = 0; i < this->itms.size(); i++)
+                            if (!this->itms.empty()) for (s32 i = 0; i < this->itms.size(); i++)
                             {
-                                if(i == this->isel) this->selfact = 0;
-                                else if(i == this->previsel) this->pselfact = 255;
+                                if (i == this->isel) this->selfact = 0;
+                                else if (i == this->previsel) this->pselfact = 255;
                             }
                         }
                     }
@@ -270,18 +298,19 @@ namespace ui
                     {
                         this->isel = this->itms.size() - 1;
                         this->fisel = 0;
-                        if(this->itms.size() >= this->ishow) {
+                        if (this->itms.size() >= this->ishow)
+                        {
                             this->fisel = this->itms.size() - this->ishow;
                             ReloadItemRenders();
                         }
                     }
                 }
-                else if(d & KEY_X)
+                else if (d & KEY_X)
                 {
                     end = true;
                     this->cancel = false;
                 }
-                else if(d & KEY_A)
+                else if (d & KEY_A)
                 {
                     end = false;
                     this->cancel = false;
@@ -290,126 +319,111 @@ namespace ui
                     this->fisel = 0;
                     this->ReloadItemRenders();
                 }
-                else if(d & KEY_B)
+                else if (d & KEY_B)
                 {
                     end = true;
                     this->cancel = true;
                 }
-                else if(d & KEY_Y)
-                {
-                    mainapp->showNotification(this->itms[this->GetSelectedIndex()].pathName);
-                }
                 u64 th = hidKeysDown(CONTROLLER_HANDHELD);
-                //this->OnInput(d, u, h, th);
-                this->OnRender(Drawer, this->GetX(), this->GetY()+125);
+                this->OnRender(Drawer, 280, this->GetY() + 83);
                 this->iconLaunch->OnRender(Drawer, this->iconLaunch->GetX(), this->iconLaunch->GetY());
                 this->iconSelect->OnRender(Drawer, this->iconSelect->GetX(), this->iconSelect->GetY());
                 this->iconCancel->OnRender(Drawer, this->iconCancel->GetX(), this->iconCancel->GetY());
-                if(end)
+                if (end)
                     return false;
                 return true;
             });
-            if(!ok)
+            if (!ok)
             {
-                ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref &Drawer) -> bool {});
+                ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref & Drawer) -> bool
+                {
+                });
                 break;
             }
         }
         return this->itms[this->GetSelectedIndex()].pathName;
     }
-    
+
     void FileDialog::OnRender(pu::ui::render::Renderer::Ref &Drawer, s32 X, s32 Y)
     {
-        if(!this->itms.empty())
+        if (!this->itms.empty())
         {
             s32 cx = X;
             s32 cy = Y;
-            s32 cw = this->w;
+            s32 cw = 1000 - 280;
             s32 ch = this->isize;
             s32 its = this->ishow;
-            if(its > this->itms.size()) its = this->itms.size();
-            if((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
-            if(this->loadednames.empty()) ReloadItemRenders();
-            for(s32 i = this->fisel; i < (its + this->fisel); i++)
+            if (its > this->itms.size()) its = this->itms.size();
+            if ((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
+            if (this->loadednames.empty()) ReloadItemRenders();
+            for (s32 i = this->fisel; i < (its + this->fisel); i++)
             {
-                s32 clrr = this->clr.R;
-                s32 clrg = this->clr.G;
-                s32 clrb = this->clr.B;
-                s32 nr = clrr - 70;
-                if(nr < 0) nr = 0;
-                s32 ng = clrg - 70;
-                if(ng < 0) ng = 0;
-                s32 nb = clrb - 70;
-                if(nb < 0) nb = 0;
-                pu::ui::Color nclr(nr, ng, nb, this->clr.A);
                 auto loadedidx = i - this->fisel;
                 auto curname = this->loadednames[loadedidx];
-                if(this->isel == i)
+                auto curicon = this->loadedicons[loadedidx];
+                if (this->isel == i)
                 {
-                    Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                    if(this->selfact < 255)
+                    auto curtime = std::chrono::steady_clock::now();
+                    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(curtime - this->blinktime).count();
+                    if (diff >= 500)
                     {
-                        Drawer->RenderRectangleFill(pu::ui::Color(this->fcs.R, this->fcs.G, this->fcs.B, this->selfact), cx, cy, cw, ch);
-                        this->selfact += 48;
+                        this->_blink = !this->_blink;
+                        this->blinktime = std::chrono::steady_clock::now();
                     }
-                    else Drawer->RenderRectangleFill(this->fcs, cx, cy, cw, ch);
-                }
-                else if(this->previsel == i)
-                {
-                    Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                    if(this->pselfact > 0)
+                    if (this->_blink)
                     {
-                        Drawer->RenderRectangleFill(pu::ui::Color(this->fcs.R, this->fcs.G, this->fcs.B, this->pselfact), cx, cy, cw, ch);
-                        this->pselfact -= 48;
+                        Drawer->RenderRoundedRectangleFill(this->_borderclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
                     }
-                    else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
+                    else
+                    {
+                        Drawer->RenderRoundedRectangleFill(this->_altclr, cx - 5, cy - 5, cw + 10, ch + 10, 4);
+                    }
+                    Drawer->RenderRectangleFill(this->_innerclr, cx, cy, cw, ch);
                 }
-                else Drawer->RenderRectangleFill(this->clr, cx, cy, cw, ch);
-                auto itm = this->itms[i];
-                s32 xh = pu::ui::render::GetTextHeight(this->font, itm.name);
-                s32 tx = (cx + 25);
+                s32 xh = pu::ui::render::GetTextHeight(this->font, this->itms[i].name);
+                s32 tx = (cx + 15);
                 s32 ty = ((ch - xh) / 2) + cy;
                 Drawer->RenderTexture(curname, tx, ty);
-                cy += ch;
+                Drawer->RenderLine(this->_lineclr, 280, cy + 60, 1000, cy + 60);
+                cy += ch + 1;
             }
-            if(this->ishow < this->itms.size())
+            if (this->ishow < this->itms.size())
             {
-                s32 sccr = this->scb.R;
-                s32 sccg = this->scb.G;
-                s32 sccb = this->scb.B;
+                s32 sccr = this->_lineclr.R;
+                s32 sccg = this->_lineclr.G;
+                s32 sccb = this->_lineclr.B;
                 s32 snr = sccr - 30;
-                if(snr < 0) snr = 0;
+                if (snr < 0) snr = 0;
                 s32 sng = sccg - 30;
-                if(sng < 0) sng = 0;
+                if (sng < 0) sng = 0;
                 s32 snb = sccb - 30;
-                if(snb < 0) snb = 0;
-                pu::ui::Color sclr(snr, sng, snb, this->scb.A);
+                if (snb < 0) snb = 0;
+                pu::ui::Color sclr(snr, sng, snb, this->_lineclr.A);
                 s32 scx = X + (this->w - 20);
                 s32 scy = Y;
                 s32 scw = 20;
                 s32 sch = (this->ishow * this->isize);
-                Drawer->RenderRectangleFill(this->scb, scx, scy, scw, sch);
+                Drawer->RenderRectangleFill(this->_lineclr, scx, scy, scw, sch);
                 s32 fch = ((this->ishow * sch) / this->itms.size());
                 s32 fcy = scy + (this->fisel * (sch / this->itms.size()));
                 Drawer->RenderRectangleFill(sclr, scx, fcy, scw, fch);
             }
-            Drawer->RenderShadowSimple(cx, cy, cw, 5, 160);
         }
     }
 
     void FileDialog::OnInput(u64 Down, u64 Up, u64 Held, bool Touch)
     {
-        if(itms.empty()) return;
-        if(basestatus == 1)
+        if (itms.empty()) return;
+        if (basestatus == 1)
         {
             auto curtime = std::chrono::steady_clock::now();
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(curtime - basetime).count();
-            if(diff >= 150)
+            if (diff >= 150)
             {
                 basestatus = 2;
             }
         }
-        if(Touch)
+        if (Touch)
         {
             touchPosition tch;
             hidTouchRead(&tch, 0);
@@ -418,18 +432,18 @@ namespace ui
             s32 cw = this->w;
             s32 ch = this->isize;
             s32 its = this->ishow;
-            if(its > this->itms.size()) its = this->itms.size();
-            if((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
-            for(s32 i = this->fisel; i < (this->fisel + its); i++)
+            if (its > this->itms.size()) its = this->itms.size();
+            if ((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
+            for (s32 i = this->fisel; i < (this->fisel + its); i++)
             {
-                if(((cx + cw) > tch.px) && (tch.px > cx) && ((cy + ch) > tch.py) && (tch.py > cy))
+                if (((cx + cw) > tch.px) && (tch.px > cx) && ((cy + ch) > tch.py) && (tch.py > cy))
                 {
                     this->dtouch = true;
                     this->previsel = this->isel;
                     this->isel = i;
                     (this->onselch)();
-                    if(i == this->isel) this->selfact = 255;
-                    else if(i == this->previsel) this->pselfact = 0;
+                    if (i == this->isel) this->selfact = 255;
+                    else if (i == this->previsel) this->pselfact = 0;
                     break;
                 }
                 cy += this->isize;
@@ -437,27 +451,29 @@ namespace ui
         }
         else
         {
-            
-            
+
+
         }
     }
-    
+
     bool FileDialog::UserCancelled()
     {
         return this->cancel;
     }
-    
+
     void FileDialog::ReloadItemRenders()
     {
-        for(u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for (u32 i = 0; i < this->loadednames.size(); i++) pu::ui::render::DeleteTexture(this->loadednames[i]);
+        for (u32 i = 0; i < this->loadedicons.size(); i++) pu::ui::render::DeleteTexture(this->loadedicons[i]);
         this->loadednames.clear();
+        this->loadedicons.clear();
         s32 its = this->ishow;
-        if(its > this->itms.size()) its = this->itms.size();
-        if((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
-        for(s32 i = this->fisel; i < (its + this->fisel); i++)
+        if (its > this->itms.size()) its = this->itms.size();
+        if ((its + this->fisel) > this->itms.size()) its = this->itms.size() - this->fisel;
+        for (s32 i = this->fisel; i < (its + this->fisel); i++)
         {
             auto strname = this->itms[i].name;
-            auto tex = pu::ui::render::RenderText(this->font, strname, gsets.CustomScheme.Text);
+            auto tex = pu::ui::render::RenderText(this->font, strname, this->_txtclr);
             this->loadednames.push_back(tex);
         }
     }

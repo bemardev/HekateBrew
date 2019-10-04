@@ -493,6 +493,20 @@ namespace elm
                     this->itms[this->previsel]->SetCoolDown(true);
                     this->itms[this->isel]->SetCoolDown(false);
                 }
+                else
+                {
+                    int idxElm = 0;
+                    while(idxElm + this->ishow < this->itms.size() -1)
+                        idxElm += this->ishow;
+                    if(this->isel < idxElm)
+                    {
+                        this->isel = this->itms.size() - 1;
+                        this->fisel = idxElm;
+                        (this->onselch)();
+                        this->itms[this->previsel]->SetCoolDown(true);
+                        this->itms[this->isel]->SetCoolDown(false);
+                    }
+                }
             }
             else if ((Down & KEY_DRIGHT) || (Down & KEY_LSTICK_RIGHT) || (Held & KEY_RSTICK_RIGHT))
             {

@@ -113,7 +113,7 @@ bool PayloadReboot::Init(std::string payloadPath)
     return true;
 }
 
-bool PayloadReboot::AlterPayload(int autoboot, int autobootl, std::string hbPath, bool launch, bool nocfg)
+bool PayloadReboot::AlterPayload(std::string autoboot, std::string autobootl, std::string hbPath, bool launch, bool nocfg)
 {
     std::string binFile = hbPath + "payload.bin";
     std::string bakFile = hbPath + "payload.bak";
@@ -131,8 +131,8 @@ bool PayloadReboot::AlterPayload(int autoboot, int autobootl, std::string hbPath
         //{
         b_cfg = new boot_cfg_t;
         b_cfg->boot_cfg = (nocfg) ? 0 : BOOT_CFG_AUTOBOOT_EN;
-        b_cfg->autoboot = autoboot;
-        b_cfg->autoboot_list = autobootl;
+        b_cfg->autoboot = std::stoi(autoboot);
+        b_cfg->autoboot_list = std::stoi(autobootl);
         b_cfg->extra_cfg = 0;
         std::memset(b_cfg->id, 0, sizeof (b_cfg->id));
         std::memset(b_cfg->xt_str, 0, sizeof (b_cfg->xt_str));

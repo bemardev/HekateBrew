@@ -46,6 +46,7 @@ namespace ui
         int CreateShowDialog(pu::String Title, pu::String Content, std::vector<pu::String> Options, bool UseLastOptionAsCancel, std::string Icon = "");
         std::string CreateFileDialog(std::string title, std::string BeginPath);
         int CreateListDialog(std::string title, std::vector<ListDialogItem::Ref> &listItems);
+        int CreateSliderDialog(std::string title, int minValue, int maxValue, int step, int currentValue);
         void endWithErrorMessage(std::string errMessage);
         void ShowLoading(bool close = false);
         void mainClose();
@@ -73,8 +74,7 @@ namespace ui
         { 115, 223, 235, 255}, // grid alternate border color
         { 58, 61, 66, 255}, // grid inner border color
         { 104, 110, 108, 255}, // line & disabled text color
-        "romfs:/LaunchIcon.png",
-        "romfs:/MoreConfigIcon.png",
+        "romfs:/icon_hekate.png",
         "romfs:/PayloadIcon.png",
         "romfs:/config.bmp",
         "romfs:/Warn.png",
@@ -91,8 +91,7 @@ namespace ui
         { 12, 191, 195, 255}, // grid alternate border color
         { 253, 253, 253, 255}, // grid inner border color
         { 182, 185, 192, 255}, // line & disabled text color
-        "romfs:/LaunchIcon.l.png",
-        "romfs:/MoreConfigIcon.l.png",
+        "romfs:/icon_hekate.l.png",
         "romfs:/PayloadIcon.l.png",
         "romfs:/config.l.bmp",
         "romfs:/Warn.l.png",

@@ -17,6 +17,7 @@
  */
 #include <ui/ui_MainApplication.hpp>
 #include <ui/ui_FileDialog.hpp>
+#include <ui/ui_SliderDialog.hpp>
 #include <cfw/cfw_Helper.hpp>
 #include <set/set_Settings.hpp>
 #include <PayloadReboot.hpp>
@@ -129,6 +130,16 @@ namespace ui
         return idxSelected;
     }
 
+    int MainApplication::CreateSliderDialog(std::string title, int minValue, int maxValue, int step, int currentValue)
+    {
+        ui::SliderDialog* sdlg = new ui::SliderDialog(title, minValue, maxValue, step, currentValue);
+        sdlg->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.GridBord, gsets.CustomScheme.GridAlt, gsets.CustomScheme.GridInner, gsets.CustomScheme.Base, gsets.CustomScheme.LineSep, gsets.CustomScheme.BaseFocus);
+        int value = sdlg->Show(this->rend, this);
+        if(sdlg->UserCancelled())   value = -1;
+        delete sdlg;
+        return value;
+    }
+    
     void MainApplication::mainClose()
     {
         int opt = this->CreateShowDialog("Exit", "Exit HekateBrew ?",{"Yes", "No", "Cancel"}, true);

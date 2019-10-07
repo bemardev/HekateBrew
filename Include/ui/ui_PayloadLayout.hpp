@@ -27,7 +27,7 @@ namespace ui
     public:
         PayloadLayout();
         PU_SMART_CTOR(PayloadLayout)
-        void Load(bool isArgon = false);
+        void Load();
         void Unload();
     private:
         elm::TextIcon::Ref iconClose;

@@ -62,87 +62,6 @@ static inline bool SaveHekateBrewConfig(HekateBrewConfig config)
     return false;
 }
 
-static inline void LoadHekateBrewConfig(HekateBrewConfig &config)
-{
-    bool hasHkbDir = isDir(hekateBrewDir);
-    if (!hasHkbDir)
-        hasHkbDir = create_directory(hekateBrewDir);
-    if(!isFile(hekateBrewFile))
-        CreateDefaultHekateBrewConfig();
-    
-    simpleIniParser::Ini *hbIni = simpleIniParser::Ini::parseFile(hekateBrewFile);
-    simpleIniParser::IniOption * option = hbIni->findSection("config")->findFirstOption("showhekate", false);
-    if (option != nullptr)
-        config.showHekate = std::atoi(option->value.c_str());
-    else
-        config.showHekate = 1;
-    option = hbIni->findSection("config")->findFirstOption("showargon", false);
-    if (option != nullptr)
-        config.showArgon = std::atoi(option->value.c_str());
-    else
-        config.showArgon = 1;
-    option = hbIni->findSection("config")->findFirstOption("showrootdir", false);
-    if (option != nullptr)
-        config.showRootDir = std::atoi(option->value.c_str());
-    else
-        config.showRootDir = 1;
-    option = hbIni->findSection("config")->findFirstOption("showcustompath", false);
-    if (option != nullptr)
-        config.showCustomPath = std::atoi(option->value.c_str());
-    else
-        config.showCustomPath = 1;
-    option = hbIni->findSection("config")->findFirstOption("custompath", false);
-    if (option != nullptr)
-        config.customPath = option->value.c_str();
-    else
-        config.customPath = std::string();
-    config.hasHekate = isFile(hekateFile);
-    config.hasArgon = isDir(argonDir);
-    config.path = hekateBrewDir;
-}
-
-static inline void LoadHekateConfig(HekateConfig &config)
-{
-    if (isFile(hekateFile)) {
-        simpleIniParser::Ini *hkIni = simpleIniParser::Ini::parseFile(hekateFile);
-        simpleIniParser::IniOption * option = hkIni->findSection("config")->findFirstOption("autoboot", false);
-        if (option != nullptr)
-            config.autoboot = std::atoi(option->value.c_str());
-        else
-            config.autoboot = 0;
-        option = hkIni->findSection("config")->findFirstOption("autoboot", false);
-        if (option != nullptr)
-            config.autoboot_list = std::atoi(option->value.c_str());
-        else
-            config.autoboot_list = 0;
-        option = hkIni->findSection("config")->findFirstOption("bootwait", false);
-        if (option != nullptr)
-            config.bootwait = std::atoi(option->value.c_str());
-        else
-            config.bootwait = 1;
-        option = hkIni->findSection("config")->findFirstOption("verification", false);
-        if (option != nullptr)
-            config.verification = std::atoi(option->value.c_str());
-        else
-            config.verification = 1;
-        option = hkIni->findSection("config")->findFirstOption("backlight", false);
-        if (option != nullptr)
-            config.backlight = std::atoi(option->value.c_str());
-        else
-            config.backlight = 100;
-        option = hkIni->findSection("config")->findFirstOption("autohosoff", false);
-        if (option != nullptr)
-            config.autohosoff = std::atoi(option->value.c_str());
-        else
-            config.autohosoff = 0;
-        option = hkIni->findSection("config")->findFirstOption("autonogc", false);
-        if (option != nullptr)
-            config.autonogc = std::atoi(option->value.c_str());
-        else
-            config.autonogc = 1;
-    }
-}
-
 static inline bool SaveHekateConfig(HekateConfig config)
 {
     if (isFile(hekateFile)) {
@@ -161,89 +80,155 @@ static inline bool SaveHekateConfig(HekateConfig config)
         return false;
 }
 
-static inline void LoadIniConfig(std::vector<LauncherItem> &configItems, std::string fileName, int listIndex)
+static inline void LoadHekateBrewConfig(HekateBrewConfig &config)
 {
-    simpleIniParser::Ini *hkIni = simpleIniParser::Ini::parseFile(fileName);
-    int configIndex = 1;
-    for (auto const& section : hkIni->sections) {
-        if (section->type != simpleIniParser::IniSectionType::Section)
-            continue;
-        if (section->value != "config") {
-            std::string image = "";
-            auto iconPath = section->findFirstOption("icon", false);
-            if (iconPath != nullptr)
-                image = "sdmc:/" + iconPath->value;
-            configItems.push_back({section->value, image, configIndex, listIndex});
-            configIndex += 1;
-        }
-    }
+    bool hasHkbDir = isDir(hekateBrewDir);
+    if (!hasHkbDir)
+        hasHkbDir = create_directory(hekateBrewDir);
+    if(!isFile(hekateBrewFile))
+        CreateDefaultHekateBrewConfig();
+    
+    simpleIniParser::Ini *hbIni = simpleIniParser::Ini::parseFile(hekateBrewFile);
+    simpleIniParser::IniOption * option = hbIni->findSection("config")->findFirstOption("showhekate", false);
+    if (option != nullptr)
+        config.showHekate = option->value.c_str();
+    else
+        config.showHekate = "1";
+    option = hbIni->findSection("config")->findFirstOption("showargon", false);
+    if (option != nullptr)
+        config.showArgon = option->value.c_str();
+    else
+        config.showArgon = "1";
+    option = hbIni->findSection("config")->findFirstOption("showrootdir", false);
+    if (option != nullptr)
+        config.showRootDir = option->value.c_str();
+    else
+        config.showRootDir = "1";
+    option = hbIni->findSection("config")->findFirstOption("showcustompath", false);
+    if (option != nullptr)
+        config.showCustomPath = option->value.c_str();
+    else
+        config.showCustomPath = "1";
+    option = hbIni->findSection("config")->findFirstOption("custompath", false);
+    if (option != nullptr)
+        config.customPath = option->value.c_str();
+    else
+        config.customPath = std::string();
+    config.hasHekate = isFile(hekateFile);
+    config.hasArgon = isDir(argonDir);
+    config.path = hekateBrewDir;
 }
 
-static inline void LoadHekateInfos(std::vector<LauncherItem> &configItems, std::vector<LauncherItem> &moreconfigItems, std::vector<PayloadItem> &payloadItems)
+static inline void LoadHekateConfig(HekateConfig &config)
 {
     if (isFile(hekateFile)) {
-        LoadIniConfig(configItems, hekateFile, 0);
+        simpleIniParser::Ini *hkIni = simpleIniParser::Ini::parseFile(hekateFile);
+        simpleIniParser::IniOption * option = hkIni->findSection("config")->findFirstOption("autoboot", false);
+        if (option != nullptr)
+            config.autoboot = option->value.c_str();
+        else
+            config.autoboot = "0";
+        option = hkIni->findSection("config")->findFirstOption("autoboot", false);
+        if (option != nullptr)
+            config.autoboot_list = option->value.c_str();
+        else
+            config.autoboot_list = "0";
+        option = hkIni->findSection("config")->findFirstOption("bootwait", false);
+        if (option != nullptr)
+            config.bootwait = option->value.c_str();
+        else
+            config.bootwait = "1";
+        option = hkIni->findSection("config")->findFirstOption("verification", false);
+        if (option != nullptr)
+            config.verification = option->value.c_str();
+        else
+            config.verification = "1";
+        option = hkIni->findSection("config")->findFirstOption("backlight", false);
+        if (option != nullptr)
+            config.backlight = option->value.c_str();
+        else
+            config.backlight = "100";
+        option = hkIni->findSection("config")->findFirstOption("autohosoff", false);
+        if (option != nullptr)
+            config.autohosoff = option->value.c_str();
+        else
+            config.autohosoff = "0";
+        option = hkIni->findSection("config")->findFirstOption("autonogc", false);
+        if (option != nullptr)
+            config.autonogc = option->value.c_str();
+        else
+            config.autonogc = "1";
+    }
+}
+
+static inline void LoadHekateInfos(std::vector<LauncherItem> &configItems)
+{
+    if (isFile(hekateFile)) {
+        simpleIniParser::Ini *hkIni = simpleIniParser::Ini::parseFile(hekateFile);
+        int configIndex = 1;
+        for (auto const& section : hkIni->sections) {
+            if (section->type != simpleIniParser::IniSectionType::Section)
+                continue;
+            if (section->value != "config") {
+                std::string image = "";
+                auto iconPath = section->findFirstOption("icon", false);
+                if (iconPath != nullptr)
+                    image = "sdmc:/" + iconPath->value;
+                configItems.push_back({section->value, image, std::to_string(configIndex), "0"});
+                configIndex += 1;
+            }
+        }
     }
     if (isDir(hekateIniDir)) {
+        int configIndex = 1;
         std::vector<std::string> files = read_directory(hekateIniDir);
         for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it) {
-            LoadIniConfig(moreconfigItems, *it, 1);
-        }
-    }
-    if (isDir(hekatePayloadDir)) {
-        std::vector<std::string> files = read_directory(hekatePayloadDir);
-        for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it) {
-            if (endsWith(*it, ".bin")) {
-                std::string image = "";
-                std::string currentFile = (*it).substr((*it).find_last_of("\\/") + 1, (*it).length()-(*it).find_last_of("\\/") - 5);
-                if (isFile(hekatePayloadDir + currentFile + ".bmp"))
-                    image = hekatePayloadDir + currentFile + ".bmp";
-                else if (isFile(hekatePayloadDir + currentFile + ".png"))
-                    image = hekatePayloadDir + currentFile + ".png";
-                payloadItems.push_back({currentFile, (*it), image});
+            simpleIniParser::Ini *hkIni = simpleIniParser::Ini::parseFile(*it);
+            for (auto const& section : hkIni->sections) {
+                if (section->type != simpleIniParser::IniSectionType::Section)
+                    continue;
+                if (section->value != "config") {
+                    std::string image = "";
+                    auto iconPath = section->findFirstOption("icon", false);
+                    if (iconPath != nullptr)
+                        image = "sdmc:/" + iconPath->value;
+                    configItems.push_back({section->value, image, std::to_string(configIndex), "1"});
+                    configIndex += 1;
+                }
             }
         }
     }
 }
 
-static inline void LoadArgonInfos(std::vector<PayloadItem> &payloadItems)
+static inline void LoadPayloadsInfos(std::vector<PayloadItem> &payloadItems, std::string payloadPath, std::string logoPath)
 {
-    if (isDir(argonDir) && isDir(argonPayloadDir)) {
-        std::vector<std::string> files = read_directory(argonPayloadDir);
-        for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it) {
-            if (endsWith(*it, ".bin")) {
-                std::string image = "";
-                std::string currentFile = (*it).substr((*it).find_last_of("\\/") + 1, (*it).length()-(*it).find_last_of("\\/") - 5);
-                if (isFile(argonLogoDir + currentFile + ".bmp"))
-                    image = argonLogoDir + currentFile + ".bmp";
-                payloadItems.push_back({currentFile, (*it), image});
-            }
-        }
-    }
-}
-
-static inline void LoadDirPayloadsInfos(std::vector<PayloadItem> &payloadItems, std::string path)
-{
-    if(isDir(path))
+    if(isDir(payloadPath) && isDir(logoPath))
     {
-        std::vector<std::string> files = read_directory(path);
+        std::vector<std::string> files = read_directory(payloadPath);
         for(auto& file : files)
         {
             if(endsWith(file, ".bin"))
             {
                 std::string image = "";
                 std::string currentFile = (file).substr((file).find_last_of("\\/") + 1, (file).length()-(file).find_last_of("\\/") - 5);
-                if (isFile(path + R"(/)" + currentFile + ".bmp"))
-                    image = path + R"(/)" + currentFile + ".bmp";
-                else if (isFile(path + R"(/)" + currentFile + ".png"))
-                    image = path + R"(/)" + currentFile + ".png";
+                if (isFile(logoPath + R"(/)" + currentFile + ".bmp"))
+                    image = logoPath + R"(/)" + currentFile + ".bmp";
+                else if (isFile(logoPath + R"(/)" + currentFile + ".png"))
+                    image = logoPath + R"(/)" + currentFile + ".png";
                 payloadItems.push_back({currentFile, file, image});
             }
         }
     }
 }
 
-static inline void LoadRootPayloadInfos(std::vector<PayloadItem> &payloadItems)
+static inline void LoadAllPayloads(std::vector<PayloadItem> &payloadItems, HekateBrewConfig config)
 {
-    LoadDirPayloadsInfos(payloadItems, rootPayloadDir);
+    if(config.hasHekate && config.showHekate == "1")
+        LoadPayloadsInfos(payloadItems, hekatePayloadDir, hekatePayloadDir);
+    if(config.hasArgon && config.showArgon == "1")
+        LoadPayloadsInfos(payloadItems, argonPayloadDir, argonLogoDir);
+    if(config.showRootDir == "1")
+        LoadPayloadsInfos(payloadItems, rootPayloadDir, rootPayloadDir);
+    if(config.showCustomPath  == "1" && config.customPath != std::string())
+        LoadPayloadsInfos(payloadItems, config.customPath, config.customPath);
 }

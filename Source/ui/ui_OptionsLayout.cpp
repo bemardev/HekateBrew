@@ -100,12 +100,12 @@ namespace ui
         this->contentsMenu->ClearItems();
         
         // Show Hekate payloads
-        elm::NinContentMenuItem::Ref showHekate = elm::NinContentMenuItem::New("Show Hekate payloads", gsets.hbConfig.showHekate ? "Yes" : "No");
+        elm::NinContentMenuItem::Ref showHekate = elm::NinContentMenuItem::New("Show Hekate payloads", gsets.hbConfig.showHekate=="1" ? "Yes" : "No");
         showHekate->SetColor(gsets.CustomScheme.Text);
-        showHekate->SetValueColor(gsets.hbConfig.showHekate ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
+        showHekate->SetValueColor(gsets.hbConfig.showHekate=="1" ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
         showHekate->AddOnClick([this, isFocused]
         {
-            gsets.hbConfig.showHekate = !gsets.hbConfig.showHekate;
+            gsets.hbConfig.showHekate = (gsets.hbConfig.showHekate=="1") ? "0" : "1";
             this->LoadPayloadOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -121,12 +121,12 @@ namespace ui
         this->contentsMenu->AddItem(showHekate);
         
         // Show Argon payloads
-        elm::NinContentMenuItem::Ref showArgon = elm::NinContentMenuItem::New("Show Argon payloads", gsets.hbConfig.showArgon ? "Yes" : "No");
+        elm::NinContentMenuItem::Ref showArgon = elm::NinContentMenuItem::New("Show Argon payloads", gsets.hbConfig.showArgon=="1" ? "Yes" : "No");
         showArgon->SetColor(gsets.CustomScheme.Text);
-        showArgon->SetValueColor(gsets.hbConfig.showArgon ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
+        showArgon->SetValueColor(gsets.hbConfig.showArgon=="1" ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
         showArgon->AddOnClick([this, isFocused]
         {
-            gsets.hbConfig.showArgon = !gsets.hbConfig.showArgon;
+            gsets.hbConfig.showArgon = (gsets.hbConfig.showArgon=="1") ? "0" : "1";
             this->LoadPayloadOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -142,12 +142,12 @@ namespace ui
         this->contentsMenu->AddItem(showArgon);
         
         // Show root payload dir
-        elm::NinContentMenuItem::Ref showRootDir = elm::NinContentMenuItem::New("Show payloads from sdmc:/payloads", gsets.hbConfig.showRootDir ? "Yes" : "No");
+        elm::NinContentMenuItem::Ref showRootDir = elm::NinContentMenuItem::New("Show payloads from sdmc:/payloads", gsets.hbConfig.showRootDir=="1" ? "Yes" : "No");
         showRootDir->SetColor(gsets.CustomScheme.Text);
-        showRootDir->SetValueColor(gsets.hbConfig.showRootDir ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
+        showRootDir->SetValueColor(gsets.hbConfig.showRootDir=="1" ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
         showRootDir->AddOnClick([this, isFocused]
         {
-            gsets.hbConfig.showRootDir = !gsets.hbConfig.showRootDir;
+            gsets.hbConfig.showRootDir = (gsets.hbConfig.showRootDir=="1") ? "0" : "1";
             this->LoadPayloadOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -163,12 +163,12 @@ namespace ui
         this->contentsMenu->AddItem(showRootDir);
         
         // Show Custom path payloads
-        elm::NinContentMenuItem::Ref showCustomPath = elm::NinContentMenuItem::New("Show custom path payloads", gsets.hbConfig.showCustomPath ? "Yes" : "No");
+        elm::NinContentMenuItem::Ref showCustomPath = elm::NinContentMenuItem::New("Show custom path payloads", gsets.hbConfig.showCustomPath=="1" ? "Yes" : "No");
         showCustomPath->SetColor(gsets.CustomScheme.Text);
-        showCustomPath->SetValueColor(gsets.hbConfig.showCustomPath ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
+        showCustomPath->SetValueColor(gsets.hbConfig.showCustomPath=="1" ? gsets.CustomScheme.BaseFocus : gsets.CustomScheme.LineSep);
         showCustomPath->AddOnClick([this, isFocused]
         {
-            gsets.hbConfig.showCustomPath = !gsets.hbConfig.showCustomPath;
+            gsets.hbConfig.showCustomPath = (gsets.hbConfig.showCustomPath=="1") ? "0" : "1";
             this->LoadPayloadOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -184,7 +184,7 @@ namespace ui
         this->contentsMenu->AddItem(showCustomPath);
         
         // Custom payload path
-        if(gsets.hbConfig.showCustomPath)
+        if(gsets.hbConfig.showCustomPath == "1")
         {
             elm::NinContentMenuItem::Ref customPath = elm::NinContentMenuItem::New("Custom path", gsets.hbConfig.customPath);
             customPath->SetColor(gsets.CustomScheme.Text);
@@ -220,28 +220,20 @@ namespace ui
         this->contentsMenu->ClearItems();
         
         // autoboot/autoboot_List
-        elm::NinContentMenuItem::Ref autoboot = elm::NinContentMenuItem::New("autoboot / autoboot_list", std::to_string(gsets.hConfig.autoboot) + " / " + std::to_string(gsets.hConfig.autoboot_list));
+        elm::NinContentMenuItem::Ref autoboot = elm::NinContentMenuItem::New("autoboot / autoboot_list", gsets.hConfig.autoboot + " / " + gsets.hConfig.autoboot_list);
         autoboot->SetColor(gsets.CustomScheme.Text);
         autoboot->SetValueColor(gsets.CustomScheme.BaseFocus);
         autoboot->AddOnClick([this, isFocused]
         {
             std::vector<ListDialogItem::Ref> listItems;
             ListDialogItem::Ref disabledItem = ListDialogItem::New("Disabled");
-            if(gsets.hConfig.autoboot == 0 && gsets.hConfig.autoboot_list == 0)
+            if(gsets.hConfig.autoboot == "0" && gsets.hConfig.autoboot_list == "0")
                 disabledItem->SetSelected(true);
             listItems.push_back(disabledItem);
-            for(auto &config : gsets.configItems)
+            for(auto &config : gsets.hekateItems)
             {
                 ListDialogItem::Ref configItem = ListDialogItem::New(config.entryName);
-                //configItem->SetIcon(config.entryImage);
-                if(gsets.hConfig.autoboot == config.entryIndex && gsets.hConfig.autoboot_list == config.entryInList)
-                    configItem->SetSelected(true);
-                listItems.push_back(configItem);
-            }
-            for(auto &config : gsets.moreconfigItems)
-            {
-                ListDialogItem::Ref configItem = ListDialogItem::New(config.entryName);
-                //configItem->SetIcon(config.entryImage);
+                configItem->SetIcon(config.entryImage);
                 if(gsets.hConfig.autoboot == config.entryIndex && gsets.hConfig.autoboot_list == config.entryInList)
                     configItem->SetSelected(true);
                 listItems.push_back(configItem);
@@ -251,18 +243,13 @@ namespace ui
             {
                 if(returnVal == 0)
                 {
-                    gsets.hConfig.autoboot = returnVal;
-                    gsets.hConfig.autoboot_list = returnVal;
-                }
-                else if(returnVal > gsets.configItems.size())
-                {
-                    gsets.hConfig.autoboot = gsets.moreconfigItems[returnVal - gsets.configItems.size()].entryIndex;
-                    gsets.hConfig.autoboot_list = gsets.moreconfigItems[returnVal - gsets.configItems.size()].entryInList;
+                    gsets.hConfig.autoboot = std::to_string(returnVal);
+                    gsets.hConfig.autoboot_list = std::to_string(returnVal);
                 }
                 else
                 {
-                    gsets.hConfig.autoboot = gsets.configItems[returnVal-1].entryIndex;
-                    gsets.hConfig.autoboot_list = gsets.configItems[returnVal-1].entryInList;
+                    gsets.hConfig.autoboot = gsets.hekateItems[returnVal-1].entryIndex;
+                    gsets.hConfig.autoboot_list = gsets.hekateItems[returnVal-1].entryInList;
                 }
             }
             this->LoadHekateOptionsItems(isFocused);
@@ -280,12 +267,14 @@ namespace ui
         this->contentsMenu->AddItem(autoboot);
         
         // bootwait
-        elm::NinContentMenuItem::Ref bootwait = elm::NinContentMenuItem::New("bootwait", std::to_string(gsets.hConfig.bootwait));
+        elm::NinContentMenuItem::Ref bootwait = elm::NinContentMenuItem::New("bootwait", gsets.hConfig.bootwait);
         bootwait->SetColor(gsets.CustomScheme.Text);
-        bootwait->SetValueColor(gsets.hConfig.bootwait == 0 ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        bootwait->SetValueColor(gsets.hConfig.bootwait == "0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
         bootwait->AddOnClick([this, isFocused]
         {
-            //Load popup or ui element to modify
+            int returnVal = mainapp->CreateSliderDialog("Bootwait", 0, 10, 1, std::stoi(gsets.hConfig.bootwait));
+            if(returnVal != -1)
+                gsets.hConfig.bootwait = std::to_string(returnVal);
             this->LoadHekateOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -301,15 +290,15 @@ namespace ui
         this->contentsMenu->AddItem(bootwait);
         
         // verification
-        elm::NinContentMenuItem::Ref verification = elm::NinContentMenuItem::New("verification", std::to_string(gsets.hConfig.verification));
+        elm::NinContentMenuItem::Ref verification = elm::NinContentMenuItem::New("verification", gsets.hConfig.verification);
         verification->SetColor(gsets.CustomScheme.Text);
-        verification->SetValueColor(gsets.hConfig.verification == 0 ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        verification->SetValueColor(gsets.hConfig.verification == "0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
         verification->AddOnClick([this, isFocused]
         {
             std::vector<ListDialogItem::Ref> listItems;
-            for(auto &verif : {0,1,2})
+            for(auto &verif : {"0","1","2"})
             {
-                ListDialogItem::Ref valueItem = ListDialogItem::New(std::to_string(verif));
+                ListDialogItem::Ref valueItem = ListDialogItem::New(verif);
                 if(gsets.hConfig.verification == verif)
                     valueItem->SetSelected(true);
                 listItems.push_back(valueItem);
@@ -332,12 +321,14 @@ namespace ui
         this->contentsMenu->AddItem(verification);
         
         // backlight
-        elm::NinContentMenuItem::Ref backlight = elm::NinContentMenuItem::New("backlight", std::to_string(gsets.hConfig.backlight));
+        elm::NinContentMenuItem::Ref backlight = elm::NinContentMenuItem::New("backlight", gsets.hConfig.backlight);
         backlight->SetColor(gsets.CustomScheme.Text);
-        backlight->SetValueColor(gsets.hConfig.backlight == 0 ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        backlight->SetValueColor(gsets.hConfig.backlight == "0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
         backlight->AddOnClick([this, isFocused]
         {
-            //Load popup or ui element to modify
+            int returnVal = mainapp->CreateSliderDialog("Backlight", 0, 255, 5, std::stoi(gsets.hConfig.backlight));
+            if(returnVal != -1)
+                gsets.hConfig.backlight = std::to_string(returnVal);
             this->LoadHekateOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -353,15 +344,15 @@ namespace ui
         this->contentsMenu->AddItem(backlight);
         
         // autohosoff
-        elm::NinContentMenuItem::Ref autohosoff = elm::NinContentMenuItem::New("autohosoff", std::to_string(gsets.hConfig.autohosoff));
+        elm::NinContentMenuItem::Ref autohosoff = elm::NinContentMenuItem::New("autohosoff", gsets.hConfig.autohosoff);
         autohosoff->SetColor(gsets.CustomScheme.Text);
-        autohosoff->SetValueColor(gsets.hConfig.autohosoff == 0 ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        autohosoff->SetValueColor(gsets.hConfig.autohosoff == "0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
         autohosoff->AddOnClick([this, isFocused]
         {
             std::vector<ListDialogItem::Ref> listItems;
-            for(auto &autohosoff : {0,1,2})
+            for(auto &autohosoff : {"0","1","2"})
             {
-                ListDialogItem::Ref valueItem = ListDialogItem::New(std::to_string(autohosoff));
+                ListDialogItem::Ref valueItem = ListDialogItem::New(autohosoff);
                 if(gsets.hConfig.autohosoff == autohosoff)
                     valueItem->SetSelected(true);
                 listItems.push_back(valueItem);
@@ -384,13 +375,13 @@ namespace ui
         this->contentsMenu->AddItem(autohosoff);
         
         // autonogc
-        elm::NinContentMenuItem::Ref autonogc = elm::NinContentMenuItem::New("autonogc", std::to_string(gsets.hConfig.autonogc));
+        elm::NinContentMenuItem::Ref autonogc = elm::NinContentMenuItem::New("autonogc", gsets.hConfig.autonogc);
         autonogc->SetColor(gsets.CustomScheme.Text);
-        autonogc->SetValueColor(gsets.hConfig.autonogc == 0 ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        autonogc->SetValueColor(gsets.hConfig.autonogc == "0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
         autonogc->AddOnClick([this, isFocused]
         {
             //Load popup or ui element to modify
-            gsets.hConfig.autonogc = (gsets.hConfig.autonogc == 0);
+            gsets.hConfig.autonogc = (gsets.hConfig.autonogc == "0") ? "1" : "0";
             this->LoadHekateOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -426,7 +417,13 @@ namespace ui
         }
         else if ((Down & KEY_Y))
         {
-            set::SaveSettings(gsets.hbConfig, gsets.hConfig);
+            mainapp->ShowLoading();
+            set::SaveSettings(gsets);
+            this->Unload();
+            set::ReloadList(gsets);
+            mainapp->ShowLoading(true);
+            mainapp->LoadLayout(mainapp->GetMainPageLayout());
+            mainapp->GetMainPageLayout()->Load();
             mainapp->showNotification("Settings saved");
         }
     }

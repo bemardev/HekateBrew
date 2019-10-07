@@ -48,35 +48,18 @@ namespace ui
         this->SetOnInput(std::bind(&PayloadLayout::OnInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     }
 
-    void PayloadLayout::Load(bool isArgon)
+    void PayloadLayout::Load()
     {
-        if (isArgon)
+        this->pageName->SetText("Payloads");
+        for (auto const& item : gsets.payloadItems)
         {
-            this->pageName->SetText("Argon payloads");
-            for (auto const& item : gsets.argonPayloads)
+            std::string image = item.payloadImage.empty() ? gsets.CustomScheme.defaultImage : item.payloadImage;
+            elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.payloadName);
+            launchItem->AddOnClick([this, item]
             {
-                std::string image = item.payloadImage.empty() ? gsets.CustomScheme.defaultImage : item.payloadImage;
-                elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.payloadName);
-                launchItem->AddOnClick([this, item]
-                {
-                    this->buttonGrid_OnClick(item.payloadPath);
-                });
-                this->buttonGrid->AddItem(launchItem);
-            }
-        }
-        else
-        {
-            this->pageName->SetText("Hekate payloads");
-            for (auto const& item : gsets.hekatePayloads)
-            {
-                std::string image = item.payloadImage.empty() ? gsets.CustomScheme.defaultImage : item.payloadImage;
-                elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.payloadName);
-                launchItem->AddOnClick([this, item]
-                {
-                    this->buttonGrid_OnClick(item.payloadPath);
-                });
-                this->buttonGrid->AddItem(launchItem);
-            }
+                this->buttonGrid_OnClick(item.payloadPath);
+            });
+            this->buttonGrid->AddItem(launchItem);
         }
         if (this->buttonGrid->GetItems().size() > 0)
             this->buttonGrid->SetSelectedIndex(0);

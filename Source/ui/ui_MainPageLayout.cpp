@@ -51,9 +51,9 @@ namespace ui
     void MainPageLayout::Load()
     {
         int buttonIndex = 1;
-        if (gsets.configItems.size() > 0)
+        if (gsets.hbConfig.hasHekate)
         {
-            elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(gsets.CustomScheme.configMenuImage, "Config");
+            elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(gsets.CustomScheme.hekateMenuImage, "Hekate Config");
             launchItem->AddOnClick([this, buttonIndex]
             {
                 this->buttonGrid_OnClick(buttonIndex);
@@ -61,34 +61,14 @@ namespace ui
             this->buttonGrid->AddItem(launchItem);
         }
         buttonIndex += 1;
-        if (gsets.moreconfigItems.size() > 0)
+        if (gsets.payloadItems.size() > 0)
         {
-            elm::SimpleGridItem::Ref configItem = elm::SimpleGridItem::New(gsets.CustomScheme.moreconfigMenuImage, "More Config");
+            elm::SimpleGridItem::Ref configItem = elm::SimpleGridItem::New(gsets.CustomScheme.defaultImage, "Payloads");
             configItem->AddOnClick([this, buttonIndex]
             {
                 this->buttonGrid_OnClick(buttonIndex);
             });
             this->buttonGrid->AddItem(configItem);
-        }
-        buttonIndex += 1;
-        if (gsets.hekatePayloads.size() > 0)
-        {
-            elm::SimpleGridItem::Ref payloadItem = elm::SimpleGridItem::New(gsets.CustomScheme.payloadMenuImage, "Hekate Payloads");
-            payloadItem->AddOnClick([this, buttonIndex]
-            {
-                this->buttonGrid_OnClick(buttonIndex);
-            });
-            this->buttonGrid->AddItem(payloadItem);
-        }
-        buttonIndex += 1;
-        if (gsets.argonPayloads.size() > 0)
-        {
-            elm::SimpleGridItem::Ref payloadItem = elm::SimpleGridItem::New(gsets.CustomScheme.payloadMenuImage, "Argon Payloads");
-            payloadItem->AddOnClick([this, buttonIndex]
-            {
-                this->buttonGrid_OnClick(buttonIndex);
-            });
-            this->buttonGrid->AddItem(payloadItem);
         }
         if (this->buttonGrid->GetItems().size() > 0)
             this->buttonGrid->SetSelectedIndex(0);
@@ -105,25 +85,13 @@ namespace ui
         {
             this->Unload();
             mainapp->LoadLayout(mainapp->GetHkConfigLayout());
-            mainapp->GetHkConfigLayout()->Load(false);
+            mainapp->GetHkConfigLayout()->Load();
         }
         else if (btnIndex == 2)
         {
             this->Unload();
-            mainapp->LoadLayout(mainapp->GetHkConfigLayout());
-            mainapp->GetHkConfigLayout()->Load(true);
-        }
-        else if (btnIndex == 3)
-        {
-            this->Unload();
             mainapp->LoadLayout(mainapp->GetPayloadLayout());
-            mainapp->GetPayloadLayout()->Load(false);
-        }
-        else if (btnIndex == 4)
-        {
-            this->Unload();
-            mainapp->LoadLayout(mainapp->GetPayloadLayout());
-            mainapp->GetPayloadLayout()->Load(true);
+            mainapp->GetPayloadLayout()->Load();
         }
     }
 

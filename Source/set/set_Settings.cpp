@@ -38,16 +38,25 @@ namespace set
         else
             gset.CustomScheme = ui::DefaultLight;
 
-        LoadHekateInfos(gset.configItems, gset.moreconfigItems, gset.hekatePayloads);
         LoadHekateConfig(gset.hConfig);
-        LoadArgonInfos(gset.argonPayloads);
+        LoadHekateInfos(gset.hekateItems);
+        LoadAllPayloads(gset.payloadItems, gset.hbConfig);
 
         return gset;
     }
     
-    void SaveSettings(HekateBrewConfig &hbconfig, HekateConfig &hconfig)
+    void ReloadList(Settings &gset)
     {
-        SaveHekateBrewConfig(hbconfig);
-        SaveHekateConfig(hconfig);
+        gset.hekateItems.clear();
+        LoadHekateInfos(gset.hekateItems);
+        gset.payloadItems.clear();
+        LoadAllPayloads(gset.payloadItems, gset.hbConfig);
+    }
+    
+    void SaveSettings(Settings &gset)
+    {
+        SaveHekateBrewConfig(gset.hbConfig);
+        SaveHekateConfig(gset.hConfig);
+        
     }
 }

@@ -36,22 +36,22 @@ struct ini_info
 };
 struct HekateConfig
 {
-    int autoboot;
-    int autoboot_list;
-    int bootwait;
-    int verification;
-    int autohosoff;
-    int autonogc;
-    int backlight;
+    std::string autoboot;
+    std::string autoboot_list;
+    std::string bootwait;
+    std::string verification;
+    std::string autohosoff;
+    std::string autonogc;
+    std::string backlight;
 };
 struct HekateBrewConfig
 {
     std::string path;
     std::string theme;
-    bool showHekate;
-    bool showArgon;
-    bool showRootDir;
-    bool showCustomPath;
+    std::string showHekate;
+    std::string showArgon;
+    std::string showRootDir;
+    std::string showCustomPath;
     std::string customPath;
     bool hasHekate;
     bool hasArgon;
@@ -67,8 +67,7 @@ struct ColorScheme
     pu::ui::Color GridAlt; // grid alternate border color
     pu::ui::Color GridInner; // grid inner border color
     pu::ui::Color LineSep;
-    std::string configMenuImage;
-    std::string moreconfigMenuImage;
+    std::string hekateMenuImage;
     std::string payloadMenuImage;
     std::string defaultImage;
     std::string warnImage;
@@ -78,8 +77,8 @@ struct LauncherItem
 {
     std::string entryName;
     std::string entryImage;
-    int entryIndex;
-    int entryInList;
+    std::string entryIndex;
+    std::string entryInList;
 };
 struct PayloadItem
 {

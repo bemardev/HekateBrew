@@ -46,35 +46,18 @@ namespace ui
         this->SetOnInput(std::bind(&HkConfigLayout::OnInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     }
 
-    void HkConfigLayout::Load(bool moreConfig)
+    void HkConfigLayout::Load()
     {
-        if (moreConfig)
+        this->pageName->SetText("Launch");
+        for (auto const& item : gsets.hekateItems)
         {
-            this->pageName->SetText("More config");
-            for (auto const& item : gsets.moreconfigItems)
+            std::string image = item.entryImage.empty() ? gsets.CustomScheme.defaultImage : item.entryImage;
+            elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.entryName);
+            launchItem->AddOnClick([this, item]
             {
-                std::string image = item.entryImage.empty() ? gsets.CustomScheme.defaultImage : item.entryImage;
-                elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.entryName);
-                launchItem->AddOnClick([this, item]
-                {
-                    this->buttonGrid_OnClick(item.entryIndex, item.entryInList);
-                });
-                this->buttonGrid->AddItem(launchItem);
-            }
-        }
-        else
-        {
-            this->pageName->SetText("Launch");
-            for (auto const& item : gsets.configItems)
-            {
-                std::string image = item.entryImage.empty() ? gsets.CustomScheme.defaultImage : item.entryImage;
-                elm::SimpleGridItem::Ref launchItem = elm::SimpleGridItem::New(image, item.entryName);
-                launchItem->AddOnClick([this, item]
-                {
-                    this->buttonGrid_OnClick(item.entryIndex, item.entryInList);
-                });
-                this->buttonGrid->AddItem(launchItem);
-            }
+                this->buttonGrid_OnClick(item.entryIndex, item.entryInList);
+            });
+            this->buttonGrid->AddItem(launchItem);
         }
         if (this->buttonGrid->GetItems().size() > 0)
             this->buttonGrid->SetSelectedIndex(0);
@@ -85,7 +68,7 @@ namespace ui
         this->buttonGrid->ClearItems();
     }
 
-    void HkConfigLayout::buttonGrid_OnClick(int autoboot, int autobootl)
+    void HkConfigLayout::buttonGrid_OnClick(std::string autoboot, std::string autobootl)
     {
         if (!PayloadReboot::AlterPayload(autoboot, autobootl, gsets.hbConfig.path, true))
         {

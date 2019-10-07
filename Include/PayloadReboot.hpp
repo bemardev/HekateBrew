@@ -51,5 +51,5 @@ namespace PayloadReboot
     void RebootRCM();
     void RebootHekate(std::string hbPath);
     void Shutdown();
-    bool AlterPayload(int autoboot, int autobootl, std::string hbPath, bool launch = false, bool nocfg = false);
+    bool AlterPayload(std::string autoboot, std::string autobootl, std::string hbPath, bool launch = false, bool nocfg = false);
 }

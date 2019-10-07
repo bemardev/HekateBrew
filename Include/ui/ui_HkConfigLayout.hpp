@@ -27,7 +27,7 @@ namespace ui
     public:
         HkConfigLayout();
         PU_SMART_CTOR(HkConfigLayout)
-        void Load(bool moreConfig = false);
+        void Load();
         void Unload();
     private:
         elm::TextIcon::Ref iconClose;
@@ -35,7 +35,7 @@ namespace ui
         elm::TextIcon::Ref iconLaunch;
         pu::ui::elm::TextBlock::Ref pageName;
         elm::SimpleGrid::Ref buttonGrid;
-        void buttonGrid_OnClick(int autoboot, int autobootl);
+        void buttonGrid_OnClick(std::string autoboot, std::string autobootl);
         void OnInput(u64 Down, u64 Up, u64 Held);
     };
 }

@@ -30,13 +30,14 @@ namespace set
         HekateBrewConfig hbConfig;
         bool needSave;
         int blinkDelay;
-        std::vector<LauncherItem> configItems;
-        std::vector<LauncherItem> moreconfigItems;
-        std::vector<PayloadItem> hekatePayloads;
-        std::vector<PayloadItem> argonPayloads;
+        
+        std::vector<LauncherItem> hekateItems;
+        std::vector<PayloadItem> payloadItems;
     };
 
     Settings ProcessSettings();
     
-    void SaveSettings(HekateBrewConfig &config, HekateConfig &hconfig);
+    void ReloadList(Settings &gset);
+    
+    void SaveSettings(Settings &gset);
 }

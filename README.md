@@ -13,19 +13,30 @@ HekateBrew is a simple Nintendo Switch Homebrew for
 
 *(payload logos are shown if they exist in Argon-NX logos directory)*
 
+- Launching payloads from `/payloads/` and any custom directory defined
+
 ## Configuration
 
-Extract HekateBrew zip release to the sd card root.
+Extract HekateBrew zip release to the sd card root. (A settings file is automatically created on launch if not found)
 
 *(Or, place `HekateBrew.nro` in switch directory and last Hekate payload, renamed `payload.bin`, inside `switch\HekateBrew` directory in your sd card)*
 
 ## Preview
 
 ### *HekateBrew main menu - Dark theme*
-![Hkbrew_dark](https://user-images.githubusercontent.com/55793274/65813332-35984a00-e1d4-11e9-98cc-30812bc404b0.jpg)
+![mainPage_dark](https://user-images.githubusercontent.com/55793274/66199590-3e3ec380-e69f-11e9-9469-4a68bd7c4eaa.jpg)
 
-### *HekateBrew more config - Light theme*
-![Hkbrew_light](https://user-images.githubusercontent.com/55793274/65813333-3630e080-e1d4-11e9-8dda-3a76946cacef.jpg)
+### *HekateBrew config page - Dark theme*
+![configPage_dark](https://user-images.githubusercontent.com/55793274/66199599-4139b400-e69f-11e9-9972-3f25446e2f57.jpg)
+
+### *HekateBrew payload page - Dark theme*
+![payloadPage_dark](https://user-images.githubusercontent.com/55793274/66199606-439c0e00-e69f-11e9-8e15-f75d7ecff96f.jpg)
+
+### *HekateBrew settings page - Dark theme*
+![optionsPage1_dark](https://user-images.githubusercontent.com/55793274/66199612-45fe6800-e69f-11e9-944e-e48fe7f32f73.jpg)
+
+### *HekateBrew settings page - Dark theme*
+![optionsPage3_dark](https://user-images.githubusercontent.com/55793274/66199613-4860c200-e69f-11e9-95a0-d9089fa7d9ee.jpg)
 
 ## Credits
 

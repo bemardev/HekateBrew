@@ -122,7 +122,7 @@ namespace ui
             bool ok = ((pu::ui::Application*)App)->CallForRenderWithRenderOver([&](pu::ui::render::Renderer::Ref &Drawer) -> bool
             {
                 pu::ui::render::DeleteTexture(this->vtex);
-                this->currentXpos = (this->w/this->maxValue)*this->currentValue;
+                this->currentXpos = ((float)this->w/this->maxValue)*this->currentValue;
                 this->vtex = pu::ui::render::RenderText(this->font, std::to_string(this->currentValue), this->_bfocus);
                 s32 ytex = this->GetY() + 72 + ((60 - pu::ui::render::GetTextHeight(this->font, std::to_string(this->currentValue))) / 2);
                 //Global overlay

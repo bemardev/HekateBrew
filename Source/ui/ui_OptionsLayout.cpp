@@ -77,18 +77,21 @@ namespace ui
         }, KEY_RIGHT);
         this->optionsMenu->AddItem(payloadOptions);
         
-        elm::NinMenuItem::Ref hekateOptions = elm::NinMenuItem::New("Hekate config");
-        hekateOptions->SetColor(gsets.CustomScheme.Text);
-        hekateOptions->AddOnClick([this]
+        if(gsets.hbConfig.hasHekate)
         {
-            this->LoadHekateOptionsItems(true);
-        });
-        hekateOptions->AddOnClick([this]
-        {
-            this->LoadHekateOptionsItems(true);
-            this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
-        }, KEY_RIGHT);
-        this->optionsMenu->AddItem(hekateOptions);
+            elm::NinMenuItem::Ref hekateOptions = elm::NinMenuItem::New("Hekate config");
+            hekateOptions->SetColor(gsets.CustomScheme.Text);
+            hekateOptions->AddOnClick([this]
+            {
+                this->LoadHekateOptionsItems(true);
+            });
+            hekateOptions->AddOnClick([this]
+            {
+                this->LoadHekateOptionsItems(true);
+                this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
+            }, KEY_RIGHT);
+            this->optionsMenu->AddItem(hekateOptions);
+        }
         
         this->optionsMenu->SetIsFocused(true);
         this->contentsMenu->SetIsFocused(false);
@@ -305,7 +308,7 @@ namespace ui
             }
             int returnVal = mainapp->CreateListDialog("verification", listItems);
             if(returnVal != -1)
-                gsets.hConfig.verification = returnVal;
+                gsets.hConfig.verification = std::to_string(returnVal);
             this->LoadHekateOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });
@@ -359,7 +362,7 @@ namespace ui
             }
             int returnVal = mainapp->CreateListDialog("autohosoff", listItems);
             if(returnVal != -1)
-                gsets.hConfig.autohosoff = returnVal;
+                gsets.hConfig.autohosoff = std::to_string(returnVal);
             this->LoadHekateOptionsItems(isFocused);
             this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
         });

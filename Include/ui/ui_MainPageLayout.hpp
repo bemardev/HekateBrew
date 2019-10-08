@@ -38,6 +38,7 @@ namespace ui
         elm::TextIcon::Ref iconReboot;
         elm::TextIcon::Ref iconHReboot;
         pu::ui::elm::TextBlock::Ref pageName;
+        pu::ui::elm::TextBlock::Ref errMessage;
         elm::SimpleGrid::Ref buttonGrid;
     };
 }

@@ -88,7 +88,7 @@ void PayloadReboot::RebootRCM()
 
 void PayloadReboot::RebootHekate(std::string hbPath)
 {
-    PayloadReboot::AlterPayload(0, 0, hbPath, true, true);
+    PayloadReboot::AlterPayload("0", "0", hbPath, true, true);
 }
 
 void PayloadReboot::Shutdown()

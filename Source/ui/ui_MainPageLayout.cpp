@@ -40,6 +40,12 @@ namespace ui
         this->pageName = pu::ui::elm::TextBlock::New(60, 20, "HekateBrew", 25);
         this->pageName->SetColor(gsets.CustomScheme.Text);
         this->Add(this->pageName);
+        this->errMessage = pu::ui::elm::TextBlock::New(0,0, "No payloads found and no Hekate config found.\nGo to Options to select payloads directory.");
+        this->errMessage->SetColor(gsets.CustomScheme.Text);
+        this->errMessage->SetHorizontalAlign(pu::ui::elm::HorizontalAlign::Center);
+        this->errMessage->SetVerticalAlign(pu::ui::elm::VerticalAlign::Center);
+        this->errMessage->SetVisible(false);
+        this->Add(this->errMessage);
         
         this->buttonGrid = elm::SimpleGrid::New(58, 232, true);
         this->buttonGrid->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.GridBord, gsets.CustomScheme.GridAlt, gsets.CustomScheme.GridInner, gsets.CustomScheme.Base);
@@ -71,7 +77,11 @@ namespace ui
             this->buttonGrid->AddItem(configItem);
         }
         if (this->buttonGrid->GetItems().size() > 0)
+        {
             this->buttonGrid->SetSelectedIndex(0);
+            this->errMessage->SetVisible(false);
+        }else
+            this->errMessage->SetVisible(true);
     }
 
     void MainPageLayout::Unload()

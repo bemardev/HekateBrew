@@ -36,8 +36,8 @@ static inline void CreateDefaultHekateBrewConfig()
 {
     simpleIniParser::Ini * hbIni = new simpleIniParser::Ini();
     simpleIniParser::IniSection * configSection = new simpleIniParser::IniSection(simpleIniParser::IniSectionType::Section, "config");
-    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showhekate", "1"));
-    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showargon", "1"));
+    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showhekate", "0"));
+    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showargon", "0"));
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showrootdir", "0"));
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showcustompath", "0"));
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "custompath", ""));
@@ -57,6 +57,7 @@ static inline bool SaveHekateBrewConfig(HekateBrewConfig config)
         hbIni->findSection("config")->findFirstOption("showcustompath")->value = config.showCustomPath;
         hbIni->findSection("config")->findFirstOption("custompath")->value = config.customPath;
         hbIni->writeToFile(hekateBrewFile);
+        delete hbIni;
         return true;
     }
     return false;
@@ -74,6 +75,7 @@ static inline bool SaveHekateConfig(HekateConfig config)
         hkIni->findSection("config")->findFirstOption("autohosoff")->value = config.autohosoff;
         hkIni->findSection("config")->findFirstOption("autonogc")->value = config.autonogc;
         hkIni->writeToFile(hekateFile);
+        delete hkIni;
         return true;
     }
     else
@@ -117,6 +119,7 @@ static inline void LoadHekateBrewConfig(HekateBrewConfig &config)
     config.hasHekate = isFile(hekateFile);
     config.hasArgon = isDir(argonDir);
     config.path = hekateBrewDir;
+    delete hbIni;
 }
 
 static inline void LoadHekateConfig(HekateConfig &config)
@@ -158,6 +161,7 @@ static inline void LoadHekateConfig(HekateConfig &config)
             config.autonogc = option->value.c_str();
         else
             config.autonogc = "1";
+        delete hkIni;
     }
 }
 
@@ -178,6 +182,7 @@ static inline void LoadHekateInfos(std::vector<LauncherItem> &configItems)
                 configIndex += 1;
             }
         }
+        delete hkIni;
     }
     if (isDir(hekateIniDir)) {
         int configIndex = 1;
@@ -196,6 +201,7 @@ static inline void LoadHekateInfos(std::vector<LauncherItem> &configItems)
                     configIndex += 1;
                 }
             }
+            delete hkIni;
         }
     }
 }

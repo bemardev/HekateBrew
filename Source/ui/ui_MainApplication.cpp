@@ -18,6 +18,7 @@
 #include <ui/ui_MainApplication.hpp>
 #include <ui/ui_FileDialog.hpp>
 #include <ui/ui_SliderDialog.hpp>
+#include <ui/ui_TimeDialog.hpp>
 #include <cfw/cfw_Helper.hpp>
 #include <set/set_Settings.hpp>
 #include <PayloadReboot.hpp>
@@ -55,7 +56,34 @@ namespace ui
         
         this->optionsPage = OptionsLayout::New();
         this->optionsPage->Add(this->topSeparator);
-        this->optionsPage->Add(this->bottomSeparator);        
+        this->optionsPage->Add(this->bottomSeparator);
+        
+        if(gsets.hbConfig.autoboot != "0")
+        {
+            if(gsets.hbConfig.autoboot == "1" && gsets.hbConfig.autoboot_payload != "" && stoi(gsets.hbConfig.autoboot_payload) < gsets.payloadItems.size())
+            {
+                std::string payloadPath = gsets.payloadItems[stoi(gsets.hbConfig.autoboot_payload)].payloadPath;
+                int returnVal = this->CreateTimeDialog(payloadPath, 3000);
+                if(returnVal != -1)
+                {
+                    if (PayloadReboot::Init(payloadPath))
+                        PayloadReboot::Reboot();
+                    else
+                        this->showNotification("Error booting payload");
+                }
+            }
+            else if(gsets.hbConfig.autoboot == "2" && gsets.hbConfig.autoboot_config != "" && stoi(gsets.hbConfig.autoboot_config) < gsets.hekateItems.size())
+            {
+                int returnVal = this->CreateTimeDialog(gsets.hekateItems[stoi(gsets.hbConfig.autoboot_config)].entryName, 3000);
+                if(returnVal != -1)
+                {
+                    if (!PayloadReboot::AlterPayload(gsets.hekateItems[stoi(gsets.hbConfig.autoboot_config)].entryIndex, gsets.hekateItems[stoi(gsets.hbConfig.autoboot_config)].entryInList, gsets.hbConfig.path, true))
+                    {
+                        this->showNotification("Error sending config to hekate payload");
+                    }
+                }
+            }
+        }
     }
 
     MainPageLayout::Ref &MainApplication::GetMainPageLayout()
@@ -137,6 +165,16 @@ namespace ui
         int value = sdlg->Show(this->rend, this);
         if(sdlg->UserCancelled())   value = -1;
         delete sdlg;
+        return value;
+    }
+    
+    int MainApplication::CreateTimeDialog(std::string dialogText, int delay)
+    {
+        ui::TimeDialog* tdlg = new ui::TimeDialog(dialogText, delay);
+        tdlg->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.Base, gsets.CustomScheme.BaseFocus);
+        int value = tdlg->Show(this->rend, this);
+        if(tdlg->UserCancelled())   value = -1;
+        delete tdlg;
         return value;
     }
     

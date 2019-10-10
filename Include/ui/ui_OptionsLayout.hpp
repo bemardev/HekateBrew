@@ -42,6 +42,7 @@ namespace ui
         pu::ui::elm::TextBlock::Ref pageName;
         void LoadPayloadOptionsItems(bool isFocused);
         void LoadHekateOptionsItems(bool isFocused);
+        void LoadHekateBrewOptionsItems(bool isFocused);
         void OnInput(u64 Down, u64 Up, u64 Held);
     };
 }

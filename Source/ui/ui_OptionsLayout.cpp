@@ -64,6 +64,19 @@ namespace ui
     void OptionsLayout::Load()
     {
         this->pageName->SetText("Options");
+        elm::NinMenuItem::Ref hekateBrewOptions = elm::NinMenuItem::New("HekateBrew");
+        hekateBrewOptions->SetColor(gsets.CustomScheme.Text);
+        hekateBrewOptions->AddOnClick([this]
+        {
+            this->LoadHekateBrewOptionsItems(true);
+        });
+        hekateBrewOptions->AddOnClick([this]
+        {
+            this->LoadHekateBrewOptionsItems(true);
+            this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
+        }, KEY_RIGHT);
+        this->optionsMenu->AddItem(hekateBrewOptions);
+        
         elm::NinMenuItem::Ref payloadOptions = elm::NinMenuItem::New("Payloads");
         payloadOptions->SetColor(gsets.CustomScheme.Text);
         payloadOptions->AddOnClick([this]
@@ -398,6 +411,137 @@ namespace ui
             mainapp->showNotification("0: Disable\n1: Automatically applies nogc patch if unburnt fuses found and a >= 4.0.0 HOS is booted", 3000);
         }, KEY_MINUS);
         this->contentsMenu->AddItem(autonogc);
+        
+        this->optionsMenu->SetIsFocused(!isFocused);
+        this->contentsMenu->SetIsFocused(isFocused);
+    }
+    
+    void OptionsLayout::LoadHekateBrewOptionsItems(bool isFocused)
+    {
+        this->contentsMenu->ClearItems();
+        
+        // Autoboot option
+        elm::NinContentMenuItem::Ref autoboot = elm::NinContentMenuItem::New("Autoboot", gsets.hbConfig.autoboot=="0" ? "Disabled" : (gsets.hbConfig.autoboot == "1" ? "Payload" : "Hekate config"));
+        autoboot->SetColor(gsets.CustomScheme.Text);
+        autoboot->SetValueColor(gsets.hbConfig.autoboot=="0" ? gsets.CustomScheme.LineSep : gsets.CustomScheme.BaseFocus);
+        autoboot->AddOnClick([this, isFocused]
+        {
+            std::vector<ListDialogItem::Ref> listItems;
+            int index=0;
+            for(auto &hbautoboot : {"Disabled", "Payload", "Hekate config"})
+            {
+                ListDialogItem::Ref valueItem = ListDialogItem::New(hbautoboot);
+                if(gsets.hbConfig.autoboot == std::to_string(index))
+                    valueItem->SetSelected(true);
+                listItems.push_back(valueItem);
+                index+=1;
+            }
+            int returnVal = mainapp->CreateListDialog("autoboot", listItems);
+            if(returnVal != -1)
+                gsets.hbConfig.autoboot = std::to_string(returnVal);
+            this->LoadHekateBrewOptionsItems(isFocused);
+            this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
+        });
+        autoboot->AddOnClick([this]
+            {
+                this->contentsMenu->SetIsFocused(false);
+                this->optionsMenu->SetIsFocused(true);
+            }, KEY_LEFT);
+        autoboot->AddOnClick([]
+            {
+            mainapp->showNotification("Autoboot payload or hekate config", 3000);
+            }, KEY_MINUS);
+        this->contentsMenu->AddItem(autoboot);
+        if(gsets.hbConfig.autoboot == "1")
+        {
+            if(gsets.payloadItems.size() > 0)
+            {
+                elm::NinContentMenuItem::Ref autoboot_payload = elm::NinContentMenuItem::New("Autoboot payload", (gsets.hbConfig.autoboot_payload=="" || std::stoi(gsets.hbConfig.autoboot_payload) > gsets.payloadItems.size() -1) ? "" : gsets.payloadItems[stoi(gsets.hbConfig.autoboot_payload)].payloadName);
+                autoboot_payload->SetColor(gsets.CustomScheme.Text);
+                autoboot_payload->SetValueColor(gsets.CustomScheme.BaseFocus);
+                autoboot_payload->AddOnClick([this, isFocused]
+                {
+                    std::vector<ListDialogItem::Ref> listItems;
+                    int index=0;
+                    for(auto &payload : gsets.payloadItems)
+                    {
+                        ListDialogItem::Ref payloadItem = ListDialogItem::New(payload.payloadPath);
+                        payloadItem->SetIcon(payload.payloadImage);
+                        if(gsets.hbConfig.autoboot_payload == std::to_string(index))
+                            payloadItem->SetSelected(true);
+                        listItems.push_back(payloadItem);
+                        index+=1;
+                    }
+                    int returnVal = mainapp->CreateListDialog("Autoboot payload", listItems);
+                    if(returnVal != -1)
+                        gsets.hbConfig.autoboot_payload = std::to_string(returnVal);
+                    this->LoadHekateBrewOptionsItems(isFocused);
+                    this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
+                });
+                autoboot_payload->AddOnClick([this]
+                {
+                    this->contentsMenu->SetIsFocused(false);
+                    this->optionsMenu->SetIsFocused(true);
+                }, KEY_LEFT);
+                autoboot_payload->AddOnClick([]
+                {
+                    mainapp->showNotification("Payload to autoboot", 3000);
+                }, KEY_MINUS);
+                this->contentsMenu->AddItem(autoboot_payload);
+            }
+            else
+            {
+                elm::NinContentMenuItem::Ref autoboot_payload = elm::NinContentMenuItem::New("Autoboot payload", "No payload found !");
+                autoboot_payload->SetColor(gsets.CustomScheme.Text);
+                autoboot_payload->SetValueColor(pu::ui::Color(218, 11, 11,255));
+                this->contentsMenu->AddItem(autoboot_payload);
+            }
+        }
+        else if(gsets.hbConfig.autoboot == "2")
+        {
+            if(gsets.hekateItems.size() > 0)
+            {
+                elm::NinContentMenuItem::Ref autoboot_config = elm::NinContentMenuItem::New("Autoboot config", (gsets.hbConfig.autoboot_config=="" || std::stoi(gsets.hbConfig.autoboot_config) > gsets.hekateItems.size() -1) ? "" : gsets.hekateItems[stoi(gsets.hbConfig.autoboot_config)].entryName);
+                autoboot_config->SetColor(gsets.CustomScheme.Text);
+                autoboot_config->SetValueColor(gsets.CustomScheme.BaseFocus);
+                autoboot_config->AddOnClick([this, isFocused]
+                {
+                    std::vector<ListDialogItem::Ref> listItems;
+                    int index=0;
+                    for(auto &config : gsets.hekateItems)
+                    {
+                        ListDialogItem::Ref configItem = ListDialogItem::New(config.entryName);
+                        configItem->SetIcon(config.entryImage);
+                        if(gsets.hbConfig.autoboot_config == std::to_string(index))
+                            configItem->SetSelected(true);
+                        listItems.push_back(configItem);
+                        index+=1;
+                    }
+                    int returnVal = mainapp->CreateListDialog("Autoboot config", listItems);
+                    if(returnVal != -1)
+                        gsets.hbConfig.autoboot_config = std::to_string(returnVal);
+                    this->LoadHekateBrewOptionsItems(isFocused);
+                    this->contentsMenu->SetSelectedIndex(this->contentsMenu->GetSelectedIndex());
+                });
+                autoboot_config->AddOnClick([this]
+                {
+                    this->contentsMenu->SetIsFocused(false);
+                    this->optionsMenu->SetIsFocused(true);
+                }, KEY_LEFT);
+                autoboot_config->AddOnClick([]
+                {
+                    mainapp->showNotification("Hekate config to autoboot", 3000);
+                }, KEY_MINUS);
+                this->contentsMenu->AddItem(autoboot_config);
+            }
+            else
+            {
+                elm::NinContentMenuItem::Ref autoboot_config = elm::NinContentMenuItem::New("Autoboot config", "No Hekate config found !");
+                autoboot_config->SetColor(gsets.CustomScheme.Text);
+                autoboot_config->SetValueColor(pu::ui::Color(218, 11, 11,255));
+                this->contentsMenu->AddItem(autoboot_config);
+            }
+        }
         
         this->optionsMenu->SetIsFocused(!isFocused);
         this->contentsMenu->SetIsFocused(isFocused);

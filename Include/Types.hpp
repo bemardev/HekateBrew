@@ -53,6 +53,9 @@ struct HekateBrewConfig
     std::string showRootDir;
     std::string showCustomPath;
     std::string customPath;
+    std::string autoboot;
+    std::string autoboot_config;
+    std::string autoboot_payload;
     bool hasHekate;
     bool hasArgon;
 };

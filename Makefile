@@ -33,7 +33,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 
 APP_TITLE := HekateBrew
 APP_AUTHOR := Bemar
-APP_VERSION := 0.9
+APP_VERSION := 1.0
 
 # ICON := Icon.jpg
 TARGET		:=	HekateBrew

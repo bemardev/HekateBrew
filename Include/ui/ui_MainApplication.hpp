@@ -47,6 +47,7 @@ namespace ui
         std::string CreateFileDialog(std::string title, std::string BeginPath);
         int CreateListDialog(std::string title, std::vector<ListDialogItem::Ref> &listItems);
         int CreateSliderDialog(std::string title, int minValue, int maxValue, int step, int currentValue);
+        int CreateTimeDialog(std::string dialogText, int delay);
         void endWithErrorMessage(std::string errMessage);
         void ShowLoading(bool close = false);
         void mainClose();

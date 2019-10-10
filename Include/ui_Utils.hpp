@@ -41,6 +41,9 @@ static inline void CreateDefaultHekateBrewConfig()
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showrootdir", "0"));
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "showcustompath", "0"));
     configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "custompath", ""));
+    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot", "0"));
+    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot_config", ""));
+    configSection->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot_payload", ""));
     hbIni->sections.push_back(configSection);
     hbIni->writeToFile(hekateBrewFile);
     delete hbIni;
@@ -56,6 +59,22 @@ static inline bool SaveHekateBrewConfig(HekateBrewConfig config)
         hbIni->findSection("config")->findFirstOption("showrootdir")->value = config.showRootDir;
         hbIni->findSection("config")->findFirstOption("showcustompath")->value = config.showCustomPath;
         hbIni->findSection("config")->findFirstOption("custompath")->value = config.customPath;
+        //handle update case for version prior to 1.0
+        simpleIniParser::IniOption * option = hbIni->findSection("config")->findFirstOption("autoboot", false);
+        if(option != nullptr)
+            hbIni->findSection("config")->findFirstOption("autoboot")->value = config.autoboot;
+        else
+            hbIni->findSection("config")->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot", config.autoboot));
+        option = hbIni->findSection("config")->findFirstOption("autoboot_config", false);
+        if(option != nullptr)
+            hbIni->findSection("config")->findFirstOption("autoboot_config")->value = config.autoboot_config;
+        else
+            hbIni->findSection("config")->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot_config", config.autoboot_config));
+        option = hbIni->findSection("config")->findFirstOption("autoboot_payload", false);
+        if(option != nullptr)
+            hbIni->findSection("config")->findFirstOption("autoboot_payload")->value = config.autoboot_payload;
+        else
+            hbIni->findSection("config")->options.push_back(new simpleIniParser::IniOption(simpleIniParser::IniOptionType::Option, "autoboot_payload", config.autoboot_payload));
         hbIni->writeToFile(hekateBrewFile);
         delete hbIni;
         return true;
@@ -95,27 +114,42 @@ static inline void LoadHekateBrewConfig(HekateBrewConfig &config)
     if (option != nullptr)
         config.showHekate = option->value.c_str();
     else
-        config.showHekate = "1";
+        config.showHekate = "0";
     option = hbIni->findSection("config")->findFirstOption("showargon", false);
     if (option != nullptr)
         config.showArgon = option->value.c_str();
     else
-        config.showArgon = "1";
+        config.showArgon = "0";
     option = hbIni->findSection("config")->findFirstOption("showrootdir", false);
     if (option != nullptr)
         config.showRootDir = option->value.c_str();
     else
-        config.showRootDir = "1";
+        config.showRootDir = "0";
     option = hbIni->findSection("config")->findFirstOption("showcustompath", false);
     if (option != nullptr)
         config.showCustomPath = option->value.c_str();
     else
-        config.showCustomPath = "1";
+        config.showCustomPath = "0";
     option = hbIni->findSection("config")->findFirstOption("custompath", false);
     if (option != nullptr)
         config.customPath = option->value.c_str();
     else
         config.customPath = std::string();
+    option = hbIni->findSection("config")->findFirstOption("autoboot", false);
+    if (option != nullptr)
+        config.autoboot = option->value.c_str();
+    else
+        config.autoboot = "0";
+    option = hbIni->findSection("config")->findFirstOption("autoboot_config", false);
+    if (option != nullptr)
+        config.autoboot_config = option->value.c_str();
+    else
+        config.autoboot_config = std::string();
+    option = hbIni->findSection("config")->findFirstOption("autoboot_payload", false);
+    if (option != nullptr)
+        config.autoboot_payload = option->value.c_str();
+    else
+        config.autoboot_payload = std::string();
     config.hasHekate = isFile(hekateFile);
     config.hasArgon = isDir(argonDir);
     config.path = hekateBrewDir;

@@ -46,6 +46,10 @@ namespace ui
         this->errMessage->SetVerticalAlign(pu::ui::elm::VerticalAlign::Center);
         this->errMessage->SetVisible(false);
         this->Add(this->errMessage);
+        this->autobootInfos = pu::ui::elm::TextBlock::New(0, 612, "", 25);
+        this->autobootInfos->SetColor(gsets.CustomScheme.BaseFocus);
+        this->autobootInfos->SetVisible(false);
+        this->Add(this->autobootInfos);
         
         this->buttonGrid = elm::SimpleGrid::New(58, 232, true);
         this->buttonGrid->SetColorScheme(gsets.CustomScheme.Text, gsets.CustomScheme.GridBord, gsets.CustomScheme.GridAlt, gsets.CustomScheme.GridInner, gsets.CustomScheme.Base);
@@ -80,6 +84,22 @@ namespace ui
         {
             this->buttonGrid->SetSelectedIndex(0);
             this->errMessage->SetVisible(false);
+            if(gsets.hbConfig.autoboot == "1" && gsets.hbConfig.autoboot_payload != "" && stoi(gsets.hbConfig.autoboot_payload) < gsets.payloadItems.size())
+            {
+                this->autobootInfos->SetText("Autoboot payload: " + gsets.payloadItems[stoi(gsets.hbConfig.autoboot_payload)].payloadPath);
+                this->autobootInfos->SetX(1220 - this->autobootInfos->GetTextWidth());
+                this->autobootInfos->SetVisible(true);
+            }
+            else if(gsets.hbConfig.autoboot == "2" && gsets.hbConfig.autoboot_config != "" && stoi(gsets.hbConfig.autoboot_config) < gsets.hekateItems.size())
+            {
+                this->autobootInfos->SetText("Autoboot config: " + gsets.hekateItems[stoi(gsets.hbConfig.autoboot_config)].entryName);
+                this->autobootInfos->SetX(1220 - this->autobootInfos->GetTextWidth());
+                this->autobootInfos->SetVisible(true);
+            }
+            else
+            {
+                this->autobootInfos->SetVisible(false);
+            }
         }else
             this->errMessage->SetVisible(true);
     }
